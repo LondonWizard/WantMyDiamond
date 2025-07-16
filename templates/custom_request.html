@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Custom Design Request - Want My Diamond{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5"><i class="fas fa-pencil-ruler me-3"></i>Custom Design Request</h1>
+                <p class="lead">Share your vision and we'll create a unique piece just for you</p>
+            </div>
+
+            <!-- Custom Request Form -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h3 class="mb-0">Tell Us About Your Dream Piece</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <!-- Contact Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-secondary mb-3">Contact Information</h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="budget_range" class="form-label">Budget Range</label>
+                                <select class="form-select" id="budget_range" name="budget_range">
+                                    <option value="">Select Budget Range</option>
+                                    <option value="under-1000">Under $1,000</option>
+                                    <option value="1000-2500">$1,000 - $2,500</option>
+                                    <option value="2500-5000">$2,500 - $5,000</option>
+                                    <option value="5000-10000">$5,000 - $10,000</option>
+                                    <option value="10000-25000">$10,000 - $25,000</option>
+                                    <option value="25000-plus">$25,000+</option>
+                                    <option value="flexible">Flexible</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Design Details -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-secondary mb-3">Design Details</h5>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="title" class="form-label">Project Title *</label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="e.g., Custom Engagement Ring, Anniversary Necklace" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="description" class="form-label">Detailed Description *</label>
+                                <textarea class="form-control" id="description" name="description" rows="5" 
+                                          placeholder="Describe your vision in detail. Include style preferences, stone types, metal preferences, sizing, special features, inspiration sources, etc." required></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Reference Images -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-secondary mb-3">Inspiration Images</h5>
+                                <p class="text-muted">Upload up to 5 reference images to help us understand your vision</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_0" class="form-label">Image 1</label>
+                                <input type="file" class="form-control" id="image_0" name="image_0" accept="image/*">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_1" class="form-label">Image 2</label>
+                                <input type="file" class="form-control" id="image_1" name="image_1" accept="image/*">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_2" class="form-label">Image 3</label>
+                                <input type="file" class="form-control" id="image_2" name="image_2" accept="image/*">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_3" class="form-label">Image 4</label>
+                                <input type="file" class="form-control" id="image_3" name="image_3" accept="image/*">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_4" class="form-label">Image 5</label>
+                                <input type="file" class="form-control" id="image_4" name="image_4" accept="image/*">
+                            </div>
+                        </div>
+
+                        <!-- Reference Links -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-secondary mb-3">Reference Links</h5>
+                                <p class="text-muted">Share links to inspiration pieces or styles you like</p>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="link_0" class="form-label">Reference Link 1</label>
+                                <input type="url" class="form-control" id="link_0" name="link_0" 
+                                       placeholder="https://example.com/inspiration-piece">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="link_1" class="form-label">Reference Link 2</label>
+                                <input type="url" class="form-control" id="link_1" name="link_1" 
+                                       placeholder="https://example.com/inspiration-piece">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="link_2" class="form-label">Reference Link 3</label>
+                                <input type="url" class="form-control" id="link_2" name="link_2" 
+                                       placeholder="https://example.com/inspiration-piece">
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Custom Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Process Information -->
+            <div class="row mt-5">
+                <div class="col-md-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-lightbulb fa-3x text-secondary mb-3"></i>
+                            <h6>1. Share Your Vision</h6>
+                            <p class="text-muted">Upload images, describe your ideas, and set your budget</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-comments fa-3x text-secondary mb-3"></i>
+                            <h6>2. Consultation</h6>
+                            <p class="text-muted">We'll contact you to discuss details and provide a quote</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-hammer fa-3x text-secondary mb-3"></i>
+                            <h6>3. Creation</h6>
+                            <p class="text-muted">Once approved, we'll create your unique piece with regular updates</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Why Choose Custom -->
+            <div class="mt-5 p-4 bg-light rounded">
+                <h4 class="text-center mb-4">Why Choose Custom Design?</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Unique piece tailored to your style</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Often more affordable than retail</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Direct communication with the craftsman</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Flexible timeline and process</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Personal story and meaning</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Quality craftsmanship guaranteed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // File upload preview functionality
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            const label = this.closest('.mb-3').querySelector('label');
+            
+            if (file) {
+                label.innerHTML = label.innerHTML.split(' ')[0] + ' ' + label.innerHTML.split(' ')[1] + ' - ' + file.name;
+                label.classList.add('text-success');
+            }
+        });
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        
+        if (title.length < 5) {
+            alert('Please provide a more descriptive title (at least 5 characters)');
+            e.preventDefault();
+            return;
+        }
+        
+        if (description.length < 50) {
+            alert('Please provide a more detailed description (at least 50 characters)');
+            e.preventDefault();
+            return;
+        }
+    });
+</script>
+{% endblock %} 

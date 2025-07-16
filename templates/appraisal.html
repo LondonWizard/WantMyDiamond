@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}DIA Appraisal Service - Want My Diamond{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5"><i class="fas fa-certificate me-3"></i>DIA Appraisal Service</h1>
+                <p class="lead">Professional jewelry appraisals certified by the Diamond Association of America</p>
+                <div class="price mb-3">$50 per item</div>
+            </div>
+
+            <!-- Service Information -->
+            <div class="row mb-5">
+                <div class="col-md-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-shield-alt fa-3x text-secondary mb-3"></i>
+                            <h6>Certified Appraisals</h6>
+                            <p class="text-muted">Official Diamond Association of America certified documentation</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-dollar-sign fa-3x text-secondary mb-3"></i>
+                            <h6>Affordable Pricing</h6>
+                            <p class="text-muted">Professional appraisal service for just $50 per jewelry item</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-clock fa-3x text-secondary mb-3"></i>
+                            <h6>Quick Turnaround</h6>
+                            <p class="text-muted">Receive your professional appraisal document within 3-5 business days</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appraisal Request Form -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h3 class="mb-0">Request Professional Appraisal</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <!-- Contact Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-secondary mb-3">Contact Information</h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="appraisal_purpose" class="form-label">Appraisal Purpose *</label>
+                                <select class="form-select" id="appraisal_purpose" name="appraisal_purpose" required>
+                                    <option value="">Select Purpose</option>
+                                    <option value="insurance">Insurance Coverage</option>
+                                    <option value="resale">Resale/Sale</option>
+                                    <option value="estate">Estate Planning</option>
+                                    <option value="divorce">Divorce Settlement</option>
+                                    <option value="inheritance">Inheritance Documentation</option>
+                                    <option value="donation">Charitable Donation</option>
+                                    <option value="personal">Personal Knowledge</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Item Details -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-secondary mb-3">Item Description</h5>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="item_description" class="form-label">Detailed Item Description *</label>
+                                <textarea class="form-control" id="item_description" name="item_description" rows="5" 
+                                          placeholder="Please describe your jewelry item in detail including: type of jewelry (ring, necklace, etc.), metal type, stone details, size, any markings, brand information, approximate age, any known history, etc." required></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Item Images -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-secondary mb-3">Item Photography</h5>
+                                <p class="text-muted">Please upload clear, well-lit photos of your jewelry from multiple angles. Include close-ups of any markings, stamps, or signatures.</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_0" class="form-label">Overall View *</label>
+                                <input type="file" class="form-control" id="image_0" name="image_0" accept="image/*" required>
+                                <small class="text-muted">Clear photo showing the entire piece</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_1" class="form-label">Detail View</label>
+                                <input type="file" class="form-control" id="image_1" name="image_1" accept="image/*">
+                                <small class="text-muted">Close-up of stones or important details</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_2" class="form-label">Markings/Stamps</label>
+                                <input type="file" class="form-control" id="image_2" name="image_2" accept="image/*">
+                                <small class="text-muted">Any hallmarks, signatures, or stamps</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_3" class="form-label">Side/Profile View</label>
+                                <input type="file" class="form-control" id="image_3" name="image_3" accept="image/*">
+                                <small class="text-muted">Side angle showing depth and setting</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="image_4" class="form-label">Additional Image</label>
+                                <input type="file" class="form-control" id="image_4" name="image_4" accept="image/*">
+                                <small class="text-muted">Any other relevant angles or details</small>
+                            </div>
+                        </div>
+
+                        <!-- Existing Certificates -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-secondary mb-3">Existing Documentation</h5>
+                                <p class="text-muted">If you have any existing certificates, receipts, or documentation, please upload them here.</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cert_0" class="form-label">Certificate/Receipt 1</label>
+                                <input type="file" class="form-control" id="cert_0" name="cert_0" accept="image/*,application/pdf">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cert_1" class="form-label">Certificate/Receipt 2</label>
+                                <input type="file" class="form-control" id="cert_1" name="cert_1" accept="image/*,application/pdf">
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Appraisal Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Process Information -->
+            <div class="row mt-5">
+                <div class="col-md-3">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-upload fa-3x text-secondary mb-3"></i>
+                            <h6>1. Submit Request</h6>
+                            <p class="text-muted">Upload photos and details of your jewelry piece</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-credit-card fa-3x text-secondary mb-3"></i>
+                            <h6>2. Payment</h6>
+                            <p class="text-muted">We'll contact you with payment instructions ($50 per item)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-search fa-3x text-secondary mb-3"></i>
+                            <h6>3. Professional Analysis</h6>
+                            <p class="text-muted">DIA certified appraiser evaluates your jewelry</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-file-alt fa-3x text-secondary mb-3"></i>
+                            <h6>4. Receive Certificate</h6>
+                            <p class="text-muted">Official appraisal document delivered within 3-5 days</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About DIA -->
+            <div class="mt-5 p-4 bg-light rounded">
+                <h4 class="text-center mb-4">About Diamond Association of America (DIA)</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p>The Diamond Association of America is a leading professional organization for diamond and jewelry appraisers. DIA certification ensures:</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Professional standards and ethics</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Current market valuations</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Industry-recognized documentation</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Your appraisal will include:</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Detailed item description</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Current market value</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Professional photographs</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Appraiser certification</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Official DIA seal</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="mt-5">
+                <h4 class="text-center mb-4">Frequently Asked Questions</h4>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq1">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse1">
+                                Do I need to mail my jewelry to you?
+                            </button>
+                        </h2>
+                        <div id="faqCollapse1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                No! Our appraisal process works entirely through high-quality photographs. This keeps your jewelry safe and secure while still providing an accurate professional appraisal.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse2">
+                                How long does the appraisal process take?
+                            </button>
+                        </h2>
+                        <div id="faqCollapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Once we receive your photos and payment, your professional appraisal document will be completed and delivered within 3-5 business days.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse3">
+                                Will insurance companies accept this appraisal?
+                            </button>
+                        </h2>
+                        <div id="faqCollapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! Our DIA certified appraisals are widely accepted by insurance companies, banks, and other institutions that require professional jewelry valuations.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse4">
+                                What if I have multiple items to appraise?
+                            </button>
+                        </h2>
+                        <div id="faqCollapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Each item requires a separate appraisal at $50 per piece. You can submit multiple requests or contact us for bulk pricing on large collections.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // File upload preview functionality
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            const label = this.closest('.mb-3').querySelector('label');
+            
+            if (file) {
+                const originalText = label.innerHTML.split(' - ')[0]; // Get text before any existing filename
+                label.innerHTML = originalText + ' - ' + file.name;
+                label.classList.add('text-success');
+            }
+        });
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const description = document.getElementById('item_description').value;
+        const mainImage = document.getElementById('image_0').files[0];
+        
+        if (description.length < 20) {
+            alert('Please provide a more detailed description of your jewelry (at least 20 characters)');
+            e.preventDefault();
+            return;
+        }
+        
+        if (!mainImage) {
+            alert('Please upload at least one clear photo of your jewelry item');
+            e.preventDefault();
+            return;
+        }
+    });
+
+    // Purpose field change handler
+    document.getElementById('appraisal_purpose').addEventListener('change', function() {
+        if (this.value === 'other') {
+            // Could add custom purpose input field here if needed
+        }
+    });
+</script>
+{% endblock %} 

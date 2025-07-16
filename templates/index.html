@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Want My Diamond - Fine Jewelry & Custom Designs in Los Angeles{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Exquisite Jewelry & Custom Designs</h1>
+                <p class="lead mb-4">
+                    Discover exceptional fine jewelry and personalized designs in the heart of Los Angeles. 
+                    From stunning engagement rings to custom pieces, we bring your vision to life with 
+                    unmatched craftsmanship and attention to detail.
+                </p>
+                <div class="d-flex gap-3 mb-4">
+                    <a href="{{ url_for('main.gallery') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-images me-2"></i>View Gallery
+                    </a>
+                    <a href="{{ url_for('main.custom_request') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-pencil-ruler me-2"></i>Custom Design
+                    </a>
+                </div>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="mb-2">
+                            <i class="fas fa-gem fa-2x text-secondary"></i>
+                        </div>
+                        <small class="text-muted">Fine Jewelry</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="mb-2">
+                            <i class="fas fa-cogs fa-2x text-secondary"></i>
+                        </div>
+                        <small class="text-muted">Custom Designs</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="mb-2">
+                            <i class="fas fa-certificate fa-2x text-secondary"></i>
+                        </div>
+                        <small class="text-muted">DIA Appraisals</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                         alt="Luxury Diamond Ring" class="img-fluid rounded shadow-lg" style="max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Our Services</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="fas fa-store fa-3x text-secondary"></i>
+                        </div>
+                        <h5 class="card-title">Fine Jewelry Gallery</h5>
+                        <p class="card-text">
+                            Explore our curated collection of engagement rings, wedding bands, and fine jewelry. 
+                            Each piece can be customized to your preferences.
+                        </p>
+                        <a href="{{ url_for('main.gallery') }}" class="btn btn-outline-primary">Browse Gallery</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="fas fa-pencil-ruler fa-3x text-secondary"></i>
+                        </div>
+                        <h5 class="card-title">Custom Design Service</h5>
+                        <p class="card-text">
+                            Have a specific vision? Share your ideas, photos, or inspiration and we'll create 
+                            a unique piece just for you at competitive prices.
+                        </p>
+                        <a href="{{ url_for('main.custom_request') }}" class="btn btn-outline-primary">Start Custom Design</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="fas fa-certificate fa-3x text-secondary"></i>
+                        </div>
+                        <h5 class="card-title">DIA Appraisal Service</h5>
+                        <p class="card-text">
+                            Professional jewelry appraisals certified by the Diamond Association of America. 
+                            Perfect for insurance, resale, or estate purposes.
+                        </p>
+                        <div class="price mb-3">$50 per item</div>
+                        <a href="{{ url_for('main.appraisal') }}" class="btn btn-outline-primary">Get Appraisal</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Listings -->
+{% if featured_listings %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title">Featured Jewelry</h2>
+        <div class="row">
+            {% for listing in featured_listings %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100">
+                    {% if listing.images %}
+                        {% set images = listing.images | from_json %}
+                        {% if images %}
+                        <img src="{{ images[0] }}" class="card-img-top product-image" alt="{{ listing.title }}">
+                        {% else %}
+                        <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                             class="card-img-top product-image" alt="{{ listing.title }}">
+                        {% endif %}
+                    {% else %}
+                    <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                         class="card-img-top product-image" alt="{{ listing.title }}">
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ listing.title }}</h5>
+                        <p class="card-text flex-grow-1">
+                            <small class="text-muted">SKU: {{ listing.sku }}</small><br>
+                            {{ listing.description[:100] }}{% if listing.description|length > 100 %}...{% endif %}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <div>
+                                {% if listing.retail_value != listing.sale_price %}
+                                <small class="text-muted text-decoration-line-through">${{ "%.2f"|format(listing.retail_value) }}</small><br>
+                                {% endif %}
+                                <span class="price">${{ "%.2f"|format(listing.sale_price) }}</span>
+                            </div>
+                            <a href="{{ url_for('main.listing_detail', listing_id=listing.id) }}" class="btn btn-primary">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.gallery') }}" class="btn btn-lg btn-outline-primary">
+                View All Jewelry <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Why Choose Us -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title">Why Choose Want My Diamond</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-award fa-2x text-secondary me-3"></i>
+                    </div>
+                    <div>
+                        <h5>Expert Craftsmanship</h5>
+                        <p>Years of experience in fine jewelry design and manufacturing, ensuring the highest quality standards.</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-heart fa-2x text-secondary me-3"></i>
+                    </div>
+                    <div>
+                        <h5>Personalized Service</h5>
+                        <p>Every client receives individual attention and personalized recommendations tailored to their needs.</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-dollar-sign fa-2x text-secondary me-3"></i>
+                    </div>
+                    <div>
+                        <h5>Competitive Pricing</h5>
+                        <p>We offer exceptional value for custom designs and often beat competitor prices on similar pieces.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-comments fa-2x text-secondary me-3"></i>
+                    </div>
+                    <div>
+                        <h5>Direct Communication</h5>
+                        <p>Message directly with the owner for personalized service and real-time updates on your projects.</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-map-marker-alt fa-2x text-secondary me-3"></i>
+                    </div>
+                    <div>
+                        <h5>Los Angeles Based</h5>
+                        <p>Proudly serving the Los Angeles community with local expertise and convenient consultations.</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-certificate fa-2x text-secondary me-3"></i>
+                    </div>
+                    <div>
+                        <h5>Certified Appraisals</h5>
+                        <p>Official DIA certified appraisals for insurance, resale, and estate documentation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Find Your Perfect Piece?</h2>
+        <p class="lead mb-4">
+            Whether you're looking for the perfect engagement ring, want to create something unique, 
+            or need professional appraisal services, we're here to help.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('main.gallery') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-search me-2"></i>Browse Jewelry
+            </a>
+            <a href="{{ url_for('main.custom_request') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-lightbulb me-2"></i>Custom Design
+            </a>
+            <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-comments me-2"></i>Get in Touch
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %} 

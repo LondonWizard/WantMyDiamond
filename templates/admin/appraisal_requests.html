@@ -1,0 +1,293 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Appraisal Requests - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-certificate me-2"></i>DIA Appraisal Requests</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-filter me-2"></i>Status Filter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('admin.appraisal_requests') }}">All Requests</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.appraisal_requests', status='pending') }}">Pending</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.appraisal_requests', status='in_progress') }}">In Progress</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.appraisal_requests', status='completed') }}">Completed</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6>Pending Payment</h6>
+                        <h4>{{ requests.items|selectattr('payment_status', 'equalto', 'pending')|list|length }}</h4>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-credit-card fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6>In Progress</h6>
+                        <h4>{{ requests.items|selectattr('status', 'equalto', 'in_progress')|list|length }}</h4>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6>Completed</h6>
+                        <h4>{{ requests.items|selectattr('status', 'equalto', 'completed')|list|length }}</h4>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6>Total Revenue</h6>
+                        <h4>${{ (requests.items|selectattr('payment_status', 'equalto', 'paid')|list|length * 50) }}</h4>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Current Filter -->
+{% if current_status %}
+<div class="alert alert-info">
+    <i class="fas fa-filter me-2"></i>
+    Showing: <strong>{{ current_status.title() }}</strong> requests
+    <a href="{{ url_for('admin.appraisal_requests') }}" class="btn btn-sm btn-outline-primary ms-2">Clear Filter</a>
+</div>
+{% endif %}
+
+<!-- Requests List -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Appraisal Requests ($50 each)</h5>
+    </div>
+    <div class="card-body">
+        {% if requests.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Item</th>
+                        <th>Purpose</th>
+                        <th>Payment Status</th>
+                        <th>Appraisal Status</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in requests.items %}
+                    <tr>
+                        <td>
+                            <div>
+                                <strong>{{ request.contact.name }}</strong>
+                                <br><small class="text-muted">{{ request.contact.email }}</small>
+                                {% if request.contact.phone %}
+                                <br><small class="text-muted">{{ request.contact.phone }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ request.item_description[:50] }}{% if request.item_description|length > 50 %}...{% endif %}</strong>
+                                
+                                <!-- Item Images Preview -->
+                                {% if request.item_images %}
+                                    {% set images = request.item_images | from_json %}
+                                    {% if images %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-images me-1"></i>{{ images|length }} photo(s)
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <!-- Existing Certificates -->
+                                {% if request.existing_certificates %}
+                                    {% set certs = request.existing_certificates | from_json %}
+                                    {% if certs %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            <i class="fas fa-certificate me-1"></i>{{ certs|length }} existing cert(s)
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark">{{ request.appraisal_purpose.replace('_', ' ').title() }}</span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if request.payment_status == 'pending' %}bg-warning
+                                {% elif request.payment_status == 'paid' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {{ request.payment_status.title() }}
+                            </span>
+                            {% if request.payment_status == 'paid' %}
+                            <br><small class="text-success">$50.00</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if request.status == 'pending' %}bg-warning
+                                {% elif request.status == 'in_progress' %}bg-info
+                                {% elif request.status == 'completed' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {{ request.status.replace('_', ' ').title() }}
+                            </span>
+                            {% if request.appraisal_document %}
+                            <br><small class="text-success">
+                                <i class="fas fa-file-pdf me-1"></i>Document ready
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>
+                                {{ request.created_at.strftime('%Y-%m-%d') }}
+                                <br><small class="text-muted">{{ request.created_at.strftime('%H:%M') }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin.view_appraisal_request', request_id=request.id) }}" 
+                                   class="btn btn-outline-primary" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('admin.view_messages', contact_id=request.contact.id) }}" 
+                                   class="btn btn-outline-secondary" title="Messages">
+                                    <i class="fas fa-comments"></i>
+                                </a>
+                                {% if request.appraisal_document %}
+                                <a href="{{ request.appraisal_document }}" target="_blank"
+                                   class="btn btn-outline-success" title="Download Appraisal">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if requests.pages > 1 %}
+        <nav aria-label="Requests pagination" class="mt-3">
+            <ul class="pagination justify-content-center">
+                {% if requests.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.appraisal_requests', page=requests.prev_num, status=current_status) }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in requests.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != requests.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.appraisal_requests', page=page_num, status=current_status) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if requests.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.appraisal_requests', page=requests.next_num, status=current_status) }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+            <h4>No appraisal requests found</h4>
+            <p class="text-muted">
+                {% if current_status %}
+                No {{ current_status }} requests found. <a href="{{ url_for('admin.appraisal_requests') }}">View all requests</a>
+                {% else %}
+                DIA appraisal requests will appear here when customers submit them
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.badge {
+    font-size: 0.75rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+</style>
+{% endblock %} 

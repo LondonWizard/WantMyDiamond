@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Contact & Messages - Want My Diamond{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-comments me-2"></i>Contact & Messages</h3>
+                </div>
+                <div class="card-body">
+                    {% if session.contact_id %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            You're already connected to our messaging system.
+                        </div>
+                        <div class="text-center">
+                            <a href="{{ url_for('main.messages') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-comments me-2"></i>Go to Messages
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="lead">Get in touch with us! Enter your contact information to start a conversation or find your existing messages.</p>
+                        
+                        <!-- New Contact Form -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-user-plus me-2"></i>Start New Conversation</h5>
+                                <form method="POST">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">Phone Number (Optional)</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone">
+                                    </div>
+                                    
+                                    {% if session.pending_customization %}
+                                    <input type="hidden" name="listing_customization" value="{{ session.pending_customization }}">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-ring me-2"></i>
+                                        You have a customized jewelry selection ready to discuss!
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-2"></i>Start Conversation
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-search me-2"></i>Find Existing Messages</h5>
+                                <p class="text-muted">Already have messages with us? Enter your email to continue your conversation.</p>
+                                <form method="POST" action="{{ url_for('main.find_messages') }}">
+                                    <div class="mb-3">
+                                        <label for="existing_email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="existing_email" name="email" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="fas fa-search me-2"></i>Find Messages
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clock fa-2x text-secondary mb-3"></i>
+                            <h6>Response Time</h6>
+                            <p class="text-muted">We typically respond within 2-4 hours during business days</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-shield-alt fa-2x text-secondary mb-3"></i>
+                            <h6>Secure Messaging</h6>
+                            <p class="text-muted">Your conversations and personal information are kept private and secure</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-heart fa-2x text-secondary mb-3"></i>
+                            <h6>Personal Service</h6>
+                            <p class="text-muted">Speak directly with the owner for personalized attention</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Info -->
+            <div class="mt-4 p-4 bg-light rounded">
+                <h5>What can we help you with?</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Jewelry customization and sizing</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Custom design consultations</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Pricing and availability questions</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>DIA appraisal services</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Repair and maintenance</li>
+                            <li><i class="fas fa-check text-success me-2"></i>General jewelry advice</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

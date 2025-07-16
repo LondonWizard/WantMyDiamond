@@ -1,0 +1,400 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ 'Edit Listing' if listing else 'New Listing' }} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-gem me-2"></i>
+        {{ 'Edit Listing' if listing else 'New Listing' }}
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.listings') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Listings
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{{ 'Update' if listing else 'Create' }} Jewelry Listing</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <!-- Basic Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary mb-3">Basic Information</h6>
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label for="title" class="form-label">Title *</label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   value="{{ listing.title if listing else '' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="sku" class="form-label">SKU *</label>
+                            <input type="text" class="form-control" id="sku" name="sku" 
+                                   value="{{ listing.sku if listing else '' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Category *</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Engagement Rings" {{ 'selected' if listing and listing.category == 'Engagement Rings' else '' }}>Engagement Rings</option>
+                                <option value="Wedding Bands" {{ 'selected' if listing and listing.category == 'Wedding Bands' else '' }}>Wedding Bands</option>
+                                <option value="Necklaces" {{ 'selected' if listing and listing.category == 'Necklaces' else '' }}>Necklaces</option>
+                                <option value="Earrings" {{ 'selected' if listing and listing.category == 'Earrings' else '' }}>Earrings</option>
+                                <option value="Bracelets" {{ 'selected' if listing and listing.category == 'Bracelets' else '' }}>Bracelets</option>
+                                <option value="Brooches" {{ 'selected' if listing and listing.category == 'Brooches' else '' }}>Brooches</option>
+                                <option value="Watches" {{ 'selected' if listing and listing.category == 'Watches' else '' }}>Watches</option>
+                                <option value="Other" {{ 'selected' if listing and listing.category == 'Other' else '' }}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="retail_value" class="form-label">Retail Value *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="retail_value" name="retail_value" 
+                                       step="0.01" value="{{ listing.retail_value if listing else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="sale_price" class="form-label">Sale Price *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="sale_price" name="sale_price" 
+                                       step="0.01" value="{{ listing.sale_price if listing else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4">{{ listing.description if listing else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Center Stone Details -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary mb-3">Center Stone Details</h6>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="center_stone" class="form-label">Stone Type</label>
+                            <select class="form-select" id="center_stone" name="center_stone">
+                                <option value="">Select Stone</option>
+                                <option value="Diamond" {{ 'selected' if listing and listing.center_stone == 'Diamond' else '' }}>Diamond</option>
+                                <option value="Ruby" {{ 'selected' if listing and listing.center_stone == 'Ruby' else '' }}>Ruby</option>
+                                <option value="Sapphire" {{ 'selected' if listing and listing.center_stone == 'Sapphire' else '' }}>Sapphire</option>
+                                <option value="Emerald" {{ 'selected' if listing and listing.center_stone == 'Emerald' else '' }}>Emerald</option>
+                                <option value="Tanzanite" {{ 'selected' if listing and listing.center_stone == 'Tanzanite' else '' }}>Tanzanite</option>
+                                <option value="Topaz" {{ 'selected' if listing and listing.center_stone == 'Topaz' else '' }}>Topaz</option>
+                                <option value="Amethyst" {{ 'selected' if listing and listing.center_stone == 'Amethyst' else '' }}>Amethyst</option>
+                                <option value="Other" {{ 'selected' if listing and listing.center_stone == 'Other' else '' }}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="center_shape" class="form-label">Shape</label>
+                            <select class="form-select" id="center_shape" name="center_shape">
+                                <option value="">Select Shape</option>
+                                <option value="Round" {{ 'selected' if listing and listing.center_shape == 'Round' else '' }}>Round</option>
+                                <option value="Princess" {{ 'selected' if listing and listing.center_shape == 'Princess' else '' }}>Princess</option>
+                                <option value="Cushion" {{ 'selected' if listing and listing.center_shape == 'Cushion' else '' }}>Cushion</option>
+                                <option value="Emerald" {{ 'selected' if listing and listing.center_shape == 'Emerald' else '' }}>Emerald</option>
+                                <option value="Oval" {{ 'selected' if listing and listing.center_shape == 'Oval' else '' }}>Oval</option>
+                                <option value="Pear" {{ 'selected' if listing and listing.center_shape == 'Pear' else '' }}>Pear</option>
+                                <option value="Marquise" {{ 'selected' if listing and listing.center_shape == 'Marquise' else '' }}>Marquise</option>
+                                <option value="Heart" {{ 'selected' if listing and listing.center_shape == 'Heart' else '' }}>Heart</option>
+                                <option value="Asscher" {{ 'selected' if listing and listing.center_shape == 'Asscher' else '' }}>Asscher</option>
+                                <option value="Radiant" {{ 'selected' if listing and listing.center_shape == 'Radiant' else '' }}>Radiant</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="center_carat_weight" class="form-label">Carat Weight</label>
+                            <input type="number" class="form-control" id="center_carat_weight" name="center_carat_weight" 
+                                   step="0.01" value="{{ listing.center_carat_weight if listing else '' }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="center_color" class="form-label">Color Grade</label>
+                            <select class="form-select" id="center_color" name="center_color">
+                                <option value="">Select Color</option>
+                                <option value="D" {{ 'selected' if listing and listing.center_color == 'D' else '' }}>D (Colorless)</option>
+                                <option value="E" {{ 'selected' if listing and listing.center_color == 'E' else '' }}>E (Colorless)</option>
+                                <option value="F" {{ 'selected' if listing and listing.center_color == 'F' else '' }}>F (Colorless)</option>
+                                <option value="G" {{ 'selected' if listing and listing.center_color == 'G' else '' }}>G (Near Colorless)</option>
+                                <option value="H" {{ 'selected' if listing and listing.center_color == 'H' else '' }}>H (Near Colorless)</option>
+                                <option value="I" {{ 'selected' if listing and listing.center_color == 'I' else '' }}>I (Near Colorless)</option>
+                                <option value="J" {{ 'selected' if listing and listing.center_color == 'J' else '' }}>J (Near Colorless)</option>
+                                <option value="K" {{ 'selected' if listing and listing.center_color == 'K' else '' }}>K (Faint)</option>
+                                <option value="L" {{ 'selected' if listing and listing.center_color == 'L' else '' }}>L (Faint)</option>
+                                <option value="M" {{ 'selected' if listing and listing.center_color == 'M' else '' }}>M (Faint)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="center_clarity" class="form-label">Clarity Grade</label>
+                            <select class="form-select" id="center_clarity" name="center_clarity">
+                                <option value="">Select Clarity</option>
+                                <option value="FL" {{ 'selected' if listing and listing.center_clarity == 'FL' else '' }}>FL (Flawless)</option>
+                                <option value="IF" {{ 'selected' if listing and listing.center_clarity == 'IF' else '' }}>IF (Internally Flawless)</option>
+                                <option value="VVS1" {{ 'selected' if listing and listing.center_clarity == 'VVS1' else '' }}>VVS1 (Very Very Slightly Included)</option>
+                                <option value="VVS2" {{ 'selected' if listing and listing.center_clarity == 'VVS2' else '' }}>VVS2 (Very Very Slightly Included)</option>
+                                <option value="VS1" {{ 'selected' if listing and listing.center_clarity == 'VS1' else '' }}>VS1 (Very Slightly Included)</option>
+                                <option value="VS2" {{ 'selected' if listing and listing.center_clarity == 'VS2' else '' }}>VS2 (Very Slightly Included)</option>
+                                <option value="SI1" {{ 'selected' if listing and listing.center_clarity == 'SI1' else '' }}>SI1 (Slightly Included)</option>
+                                <option value="SI2" {{ 'selected' if listing and listing.center_clarity == 'SI2' else '' }}>SI2 (Slightly Included)</option>
+                                <option value="I1" {{ 'selected' if listing and listing.center_clarity == 'I1' else '' }}>I1 (Included)</option>
+                                <option value="I2" {{ 'selected' if listing and listing.center_clarity == 'I2' else '' }}>I2 (Included)</option>
+                                <option value="I3" {{ 'selected' if listing and listing.center_clarity == 'I3' else '' }}>I3 (Included)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="center_certification" class="form-label">Certification</label>
+                            <select class="form-select" id="center_certification" name="center_certification">
+                                <option value="">Select Certification</option>
+                                <option value="GIA" {{ 'selected' if listing and listing.center_certification == 'GIA' else '' }}>GIA</option>
+                                <option value="AGS" {{ 'selected' if listing and listing.center_certification == 'AGS' else '' }}>AGS</option>
+                                <option value="EGL" {{ 'selected' if listing and listing.center_certification == 'EGL' else '' }}>EGL</option>
+                                <option value="Gübelin" {{ 'selected' if listing and listing.center_certification == 'Gübelin' else '' }}>Gübelin</option>
+                                <option value="SSEF" {{ 'selected' if listing and listing.center_certification == 'SSEF' else '' }}>SSEF</option>
+                                <option value="AGL" {{ 'selected' if listing and listing.center_certification == 'AGL' else '' }}>AGL</option>
+                                <option value="Other" {{ 'selected' if listing and listing.center_certification == 'Other' else '' }}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Secondary Stone Details -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary mb-3">Secondary Stone Details (Optional)</h6>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="secondary_shape" class="form-label">Shape</label>
+                            <select class="form-select" id="secondary_shape" name="secondary_shape">
+                                <option value="">Select Shape</option>
+                                <option value="Round" {{ 'selected' if listing and listing.secondary_shape == 'Round' else '' }}>Round</option>
+                                <option value="Baguette" {{ 'selected' if listing and listing.secondary_shape == 'Baguette' else '' }}>Baguette</option>
+                                <option value="Princess" {{ 'selected' if listing and listing.secondary_shape == 'Princess' else '' }}>Princess</option>
+                                <option value="Trillion" {{ 'selected' if listing and listing.secondary_shape == 'Trillion' else '' }}>Trillion</option>
+                                <option value="Other" {{ 'selected' if listing and listing.secondary_shape == 'Other' else '' }}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="secondary_carat_weight" class="form-label">Total Carat Weight</label>
+                            <input type="number" class="form-control" id="secondary_carat_weight" name="secondary_carat_weight" 
+                                   step="0.01" value="{{ listing.secondary_carat_weight if listing else '' }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="secondary_color" class="form-label">Color Grade</label>
+                            <select class="form-select" id="secondary_color" name="secondary_color">
+                                <option value="">Select Color</option>
+                                <option value="D" {{ 'selected' if listing and listing.secondary_color == 'D' else '' }}>D</option>
+                                <option value="E" {{ 'selected' if listing and listing.secondary_color == 'E' else '' }}>E</option>
+                                <option value="F" {{ 'selected' if listing and listing.secondary_color == 'F' else '' }}>F</option>
+                                <option value="G" {{ 'selected' if listing and listing.secondary_color == 'G' else '' }}>G</option>
+                                <option value="H" {{ 'selected' if listing and listing.secondary_color == 'H' else '' }}>H</option>
+                                <option value="I" {{ 'selected' if listing and listing.secondary_color == 'I' else '' }}>I</option>
+                                <option value="J" {{ 'selected' if listing and listing.secondary_color == 'J' else '' }}>J</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="secondary_clarity" class="form-label">Clarity Grade</label>
+                            <select class="form-select" id="secondary_clarity" name="secondary_clarity">
+                                <option value="">Select Clarity</option>
+                                <option value="FL" {{ 'selected' if listing and listing.secondary_clarity == 'FL' else '' }}>FL</option>
+                                <option value="IF" {{ 'selected' if listing and listing.secondary_clarity == 'IF' else '' }}>IF</option>
+                                <option value="VVS1" {{ 'selected' if listing and listing.secondary_clarity == 'VVS1' else '' }}>VVS1</option>
+                                <option value="VVS2" {{ 'selected' if listing and listing.secondary_clarity == 'VVS2' else '' }}>VVS2</option>
+                                <option value="VS1" {{ 'selected' if listing and listing.secondary_clarity == 'VS1' else '' }}>VS1</option>
+                                <option value="VS2" {{ 'selected' if listing and listing.secondary_clarity == 'VS2' else '' }}>VS2</option>
+                                <option value="SI1" {{ 'selected' if listing and listing.secondary_clarity == 'SI1' else '' }}>SI1</option>
+                                <option value="SI2" {{ 'selected' if listing and listing.secondary_clarity == 'SI2' else '' }}>SI2</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Setting Details -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary mb-3">Setting Details</h6>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="total_carat_weight" class="form-label">Total Carat Weight</label>
+                            <input type="number" class="form-control" id="total_carat_weight" name="total_carat_weight" 
+                                   step="0.01" value="{{ listing.total_carat_weight if listing else '' }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="metal" class="form-label">Metal</label>
+                            <select class="form-select" id="metal" name="metal">
+                                <option value="">Select Metal</option>
+                                <option value="14K White Gold" {{ 'selected' if listing and listing.metal == '14K White Gold' else '' }}>14K White Gold</option>
+                                <option value="14K Yellow Gold" {{ 'selected' if listing and listing.metal == '14K Yellow Gold' else '' }}>14K Yellow Gold</option>
+                                <option value="14K Rose Gold" {{ 'selected' if listing and listing.metal == '14K Rose Gold' else '' }}>14K Rose Gold</option>
+                                <option value="18K White Gold" {{ 'selected' if listing and listing.metal == '18K White Gold' else '' }}>18K White Gold</option>
+                                <option value="18K Yellow Gold" {{ 'selected' if listing and listing.metal == '18K Yellow Gold' else '' }}>18K Yellow Gold</option>
+                                <option value="18K Rose Gold" {{ 'selected' if listing and listing.metal == '18K Rose Gold' else '' }}>18K Rose Gold</option>
+                                <option value="Platinum" {{ 'selected' if listing and listing.metal == 'Platinum' else '' }}>Platinum</option>
+                                <option value="Silver" {{ 'selected' if listing and listing.metal == 'Silver' else '' }}>Silver</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="ring_size" class="form-label">Ring Size</label>
+                            <input type="text" class="form-control" id="ring_size" name="ring_size" 
+                                   value="{{ listing.ring_size if listing else '' }}" placeholder="e.g., 6.5">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="setting_retail_value" class="form-label">Setting Retail Value</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="setting_retail_value" name="setting_retail_value" 
+                                       step="0.01" value="{{ listing.setting_retail_value if listing else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customization Options -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary mb-3">Customization Options</h6>
+                            <p class="text-muted small">Enter comma-separated options for customers to choose from</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="metal_options" class="form-label">Metal Options</label>
+                            <input type="text" class="form-control" id="metal_options" name="metal_options" 
+                                   placeholder="14K White Gold, 18K Yellow Gold, Platinum">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="size_options" class="form-label">Size Options</label>
+                            <input type="text" class="form-control" id="size_options" name="size_options" 
+                                   placeholder="5, 5.5, 6, 6.5, 7, 7.5, 8">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="stone_options" class="form-label">Stone Options</label>
+                            <input type="text" class="form-control" id="stone_options" name="stone_options" 
+                                   placeholder="1ct Diamond, 1.5ct Diamond, 2ct Diamond">
+                        </div>
+                    </div>
+
+                    <!-- Images -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-secondary mb-3">Product Images</h6>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_0" class="form-label">Main Image</label>
+                            <input type="file" class="form-control" id="image_0" name="image_0" accept="image/*">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_1" class="form-label">Image 2</label>
+                            <input type="file" class="form-control" id="image_1" name="image_1" accept="image/*">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_2" class="form-label">Image 3</label>
+                            <input type="file" class="form-control" id="image_2" name="image_2" accept="image/*">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_3" class="form-label">Image 4</label>
+                            <input type="file" class="form-control" id="image_3" name="image_3" accept="image/*">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_4" class="form-label">Image 5</label>
+                            <input type="file" class="form-control" id="image_4" name="image_4" accept="image/*">
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                       {{ 'checked' if listing and listing.is_active else 'checked' if not listing else '' }}>
+                                <label class="form-check-label" for="is_active">
+                                    <strong>Active Listing</strong>
+                                    <br><small class="text-muted">Check to make this listing visible on the website</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-save me-2"></i>{{ 'Update Listing' if listing else 'Create Listing' }}
+                        </button>
+                        <a href="{{ url_for('admin.listings') }}" class="btn btn-outline-secondary btn-lg">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calculate discount percentage
+function updateDiscount() {
+    const retailValue = parseFloat(document.getElementById('retail_value').value) || 0;
+    const salePrice = parseFloat(document.getElementById('sale_price').value) || 0;
+    
+    if (retailValue > 0 && salePrice > 0 && salePrice < retailValue) {
+        const discount = ((retailValue - salePrice) / retailValue * 100).toFixed(0);
+        document.getElementById('discount_display').textContent = `${discount}% off retail`;
+        document.getElementById('discount_info').style.display = 'block';
+    } else {
+        document.getElementById('discount_info').style.display = 'none';
+    }
+}
+
+document.getElementById('retail_value').addEventListener('input', updateDiscount);
+document.getElementById('sale_price').addEventListener('input', updateDiscount);
+
+// File upload preview
+document.querySelectorAll('input[type="file"]').forEach(input => {
+    input.addEventListener('change', function() {
+        const file = this.files[0];
+        const label = this.previousElementSibling;
+        
+        if (file) {
+            label.textContent = label.textContent.split(' - ')[0] + ' - ' + file.name;
+            label.classList.add('text-success');
+        }
+    });
+});
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const title = document.getElementById('title').value;
+    const sku = document.getElementById('sku').value;
+    const retailValue = parseFloat(document.getElementById('retail_value').value);
+    const salePrice = parseFloat(document.getElementById('sale_price').value);
+    
+    if (title.length < 3) {
+        alert('Title must be at least 3 characters long');
+        e.preventDefault();
+        return;
+    }
+    
+    if (sku.length < 2) {
+        alert('SKU must be at least 2 characters long');
+        e.preventDefault();
+        return;
+    }
+    
+    if (salePrice > retailValue) {
+        alert('Sale price cannot be higher than retail value');
+        e.preventDefault();
+        return;
+    }
+});
+
+// Initialize discount display
+updateDiscount();
+</script>
+
+<!-- Add discount display element -->
+<div id="discount_info" style="display: none;" class="alert alert-info mt-2">
+    <small>Discount: <span id="discount_display"></span></small>
+</div>
+{% endblock %} 
