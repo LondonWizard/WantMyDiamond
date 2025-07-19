@@ -74,17 +74,21 @@ def listings():
 def new_listing():
     """Create new listing"""
     if request.method == 'POST':
+        category = request.form.get('category')
+        shape = request.form.get('center_shape')
+        sku = request.form.get('sku')
+        
         listing = Listing(
             title=request.form.get('title'),
-            sku=request.form.get('sku'),
-            category=request.form.get('category'),
+            sku=sku,
+            category=category,
             retail_value=float(request.form.get('retail_value', 0)),
             sale_price=float(request.form.get('sale_price', 0)),
             description=request.form.get('description'),
             
             # Center stone details
             center_stone=request.form.get('center_stone'),
-            center_shape=request.form.get('center_shape'),
+            center_shape=shape,
             center_carat_weight=float(request.form.get('center_carat_weight', 0)) if request.form.get('center_carat_weight') else None,
             center_color=request.form.get('center_color'),
             center_clarity=request.form.get('center_clarity'),
@@ -113,17 +117,27 @@ def new_listing():
         if options:
             listing.options = json.dumps(options)
         
-        # Handle image uploads
+        # Handle image uploads - Store in gallery structure
         images = []
-        for i in range(5):  # Allow up to 5 images
-            if f'image_{i}' in request.files:
-                file = request.files[f'image_{i}']
-                if file and file.filename:
-                    filename = secure_filename(file.filename)
-                    upload_path = os.path.join('static/uploads/listings', filename)
-                    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-                    file.save(upload_path)
-                    images.append(upload_path)
+        if category and shape and sku:
+            # Create gallery-style directory structure
+            gallery_path = os.path.join('static/WMD_Photos_NoVideos', category, shape, sku)
+            os.makedirs(gallery_path, exist_ok=True)
+            
+            for i in range(10):  # Allow up to 10 images
+                if f'image_{i}' in request.files:
+                    file = request.files[f'image_{i}']
+                    if file and file.filename:
+                        # Use timestamp + original filename for uniqueness
+                        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                        file_ext = os.path.splitext(file.filename)[1].lower()
+                        filename = f"{timestamp}_{i}{file_ext}"
+                        upload_path = os.path.join(gallery_path, filename)
+                        
+                        file.save(upload_path)
+                        # Store relative path for gallery access
+                        relative_path = f"/static/WMD_Photos_NoVideos/{category}/{shape}/{sku}/{filename}"
+                        images.append(relative_path)
         
         if images:
             listing.images = json.dumps(images)
@@ -131,10 +145,15 @@ def new_listing():
         db.session.add(listing)
         db.session.commit()
         
-        flash('Listing created successfully!')
+        flash('Listing created successfully and added to gallery!')
         return redirect(url_for('admin.listings'))
     
-    return render_template('admin/listing_form.html', listing=None)
+    # Get gallery categories for form
+    from routes.gallery import JEWELRY_CATEGORIES, DIAMOND_SHAPES
+    return render_template('admin/listing_form.html', 
+                         listing=None, 
+                         gallery_categories=JEWELRY_CATEGORIES,
+                         diamond_shapes=DIAMOND_SHAPES)
 
 @admin_bp.route('/listings/<int:listing_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -143,6 +162,10 @@ def edit_listing(listing_id):
     listing = Listing.query.get_or_404(listing_id)
     
     if request.method == 'POST':
+        old_category = listing.category
+        old_shape = listing.center_shape
+        old_sku = listing.sku
+        
         listing.title = request.form.get('title')
         listing.sku = request.form.get('sku')
         listing.category = request.form.get('category')
@@ -171,11 +194,129 @@ def edit_listing(listing_id):
         listing.is_active = 'is_active' in request.form
         listing.updated_at = datetime.utcnow()
         
+        # Handle image uploads if any new ones
+        existing_images = json.loads(listing.images) if listing.images else []
+        new_images = []
+        
+        # Create gallery directory for new images
+        gallery_path = os.path.join('static/WMD_Photos_NoVideos', listing.category, listing.center_shape, listing.sku)
+        os.makedirs(gallery_path, exist_ok=True)
+        
+        for i in range(10):
+            if f'image_{i}' in request.files:
+                file = request.files[f'image_{i}']
+                if file and file.filename:
+                    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                    file_ext = os.path.splitext(file.filename)[1].lower()
+                    filename = f"{timestamp}_{i}{file_ext}"
+                    upload_path = os.path.join(gallery_path, filename)
+                    
+                    file.save(upload_path)
+                    relative_path = f"/static/WMD_Photos_NoVideos/{listing.category}/{listing.center_shape}/{listing.sku}/{filename}"
+                    new_images.append(relative_path)
+        
+        # Combine existing and new images
+        all_images = existing_images + new_images
+        if all_images:
+            listing.images = json.dumps(all_images)
+        
         db.session.commit()
         flash('Listing updated successfully!')
         return redirect(url_for('admin.listings'))
     
-    return render_template('admin/listing_form.html', listing=listing)
+    from routes.gallery import JEWELRY_CATEGORIES, DIAMOND_SHAPES
+    return render_template('admin/listing_form.html', 
+                         listing=listing,
+                         gallery_categories=JEWELRY_CATEGORIES,
+                         diamond_shapes=DIAMOND_SHAPES)
+
+@admin_bp.route('/listings/<int:listing_id>/delete', methods=['POST'])
+@login_required
+def delete_listing(listing_id):
+    """Delete a listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    # Optionally remove the gallery directory and images
+    if listing.category and listing.center_shape and listing.sku:
+        gallery_path = os.path.join('static/WMD_Photos_NoVideos', listing.category, listing.center_shape, listing.sku)
+        if os.path.exists(gallery_path):
+            import shutil
+            try:
+                shutil.rmtree(gallery_path)
+            except:
+                pass  # Continue even if directory removal fails
+    
+    db.session.delete(listing)
+    db.session.commit()
+    
+    flash('Listing deleted successfully!')
+    return redirect(url_for('admin.listings'))
+
+@admin_bp.route('/import_gallery', methods=['GET', 'POST'])
+@login_required
+def import_gallery():
+    """Import existing gallery items into listings database"""
+    if request.method == 'POST':
+        imported_count = 0
+        skipped_count = 0
+        
+        # Scan the WMD_Photos_NoVideos directory
+        photos_path = os.path.join('static/WMD_Photos_NoVideos')
+        
+        if os.path.exists(photos_path):
+            for category in os.listdir(photos_path):
+                category_path = os.path.join(photos_path, category)
+                if os.path.isdir(category_path):
+                    for shape in os.listdir(category_path):
+                        shape_path = os.path.join(category_path, shape)
+                        if os.path.isdir(shape_path):
+                            for item in os.listdir(shape_path):
+                                item_path = os.path.join(shape_path, item)
+                                if os.path.isdir(item_path):
+                                    # Check if listing already exists
+                                    existing = Listing.query.filter_by(
+                                        category=category,
+                                        center_shape=shape,
+                                        sku=item
+                                    ).first()
+                                    
+                                    if existing:
+                                        skipped_count += 1
+                                        continue
+                                    
+                                    # Get images
+                                    images = []
+                                    for file in os.listdir(item_path):
+                                        if file.lower().endswith(('.jpg', '.jpeg', '.png')):
+                                            images.append(f"/static/WMD_Photos_NoVideos/{category}/{shape}/{item}/{file}")
+                                    
+                                    if images:
+                                        # Create new listing
+                                        listing = Listing(
+                                            title=f"{shape} {category} - {item}",
+                                            sku=item,
+                                            category=category,
+                                            center_shape=shape,
+                                            retail_value=0.00,  # Default values
+                                            sale_price=0.00,
+                                            description=f"Imported {shape} {category.lower()} from gallery",
+                                            images=json.dumps(images),
+                                            is_active=True
+                                        )
+                                        
+                                        db.session.add(listing)
+                                        imported_count += 1
+            
+            db.session.commit()
+            flash(f'Gallery import completed! Imported {imported_count} items, skipped {skipped_count} existing items.')
+        else:
+            flash('Gallery photos directory not found!')
+        
+        return redirect(url_for('admin.listings'))
+    
+    # GET request - show import form
+    existing_count = Listing.query.count()
+    return render_template('admin/import_gallery.html', existing_count=existing_count)
 
 @admin_bp.route('/messages')
 @login_required

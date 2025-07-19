@@ -42,14 +42,19 @@
                             <label for="category" class="form-label">Category *</label>
                             <select class="form-select" id="category" name="category" required>
                                 <option value="">Select Category</option>
-                                <option value="Engagement Rings" {{ 'selected' if listing and listing.category == 'Engagement Rings' else '' }}>Engagement Rings</option>
-                                <option value="Wedding Bands" {{ 'selected' if listing and listing.category == 'Wedding Bands' else '' }}>Wedding Bands</option>
-                                <option value="Necklaces" {{ 'selected' if listing and listing.category == 'Necklaces' else '' }}>Necklaces</option>
-                                <option value="Earrings" {{ 'selected' if listing and listing.category == 'Earrings' else '' }}>Earrings</option>
-                                <option value="Bracelets" {{ 'selected' if listing and listing.category == 'Bracelets' else '' }}>Bracelets</option>
-                                <option value="Brooches" {{ 'selected' if listing and listing.category == 'Brooches' else '' }}>Brooches</option>
-                                <option value="Watches" {{ 'selected' if listing and listing.category == 'Watches' else '' }}>Watches</option>
-                                <option value="Other" {{ 'selected' if listing and listing.category == 'Other' else '' }}>Other</option>
+                                {% if gallery_categories %}
+                                    {% for category_key, category_info in gallery_categories.items() %}
+                                    <option value="{{ category_key }}" {{ 'selected' if listing and listing.category == category_key else '' }}>
+                                        {{ category_info.name }}
+                                    </option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option value="Engagement Ring" {{ 'selected' if listing and listing.category == 'Engagement Ring' else '' }}>Engagement Rings</option>
+                                    <option value="Bridal Set" {{ 'selected' if listing and listing.category == 'Bridal Set' else '' }}>Bridal Sets</option>
+                                    <option value="Eternity Bands" {{ 'selected' if listing and listing.category == 'Eternity Bands' else '' }}>Eternity Bands</option>
+                                    <option value="Earrings" {{ 'selected' if listing and listing.category == 'Earrings' else '' }}>Earrings</option>
+                                    <option value="Bracelets" {{ 'selected' if listing and listing.category == 'Bracelets' else '' }}>Bracelets</option>
+                                {% endif %}
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
@@ -97,16 +102,22 @@
                             <label for="center_shape" class="form-label">Shape</label>
                             <select class="form-select" id="center_shape" name="center_shape">
                                 <option value="">Select Shape</option>
-                                <option value="Round" {{ 'selected' if listing and listing.center_shape == 'Round' else '' }}>Round</option>
-                                <option value="Princess" {{ 'selected' if listing and listing.center_shape == 'Princess' else '' }}>Princess</option>
-                                <option value="Cushion" {{ 'selected' if listing and listing.center_shape == 'Cushion' else '' }}>Cushion</option>
-                                <option value="Emerald" {{ 'selected' if listing and listing.center_shape == 'Emerald' else '' }}>Emerald</option>
-                                <option value="Oval" {{ 'selected' if listing and listing.center_shape == 'Oval' else '' }}>Oval</option>
-                                <option value="Pear" {{ 'selected' if listing and listing.center_shape == 'Pear' else '' }}>Pear</option>
-                                <option value="Marquise" {{ 'selected' if listing and listing.center_shape == 'Marquise' else '' }}>Marquise</option>
-                                <option value="Heart" {{ 'selected' if listing and listing.center_shape == 'Heart' else '' }}>Heart</option>
-                                <option value="Asscher" {{ 'selected' if listing and listing.center_shape == 'Asscher' else '' }}>Asscher</option>
-                                <option value="Radiant" {{ 'selected' if listing and listing.center_shape == 'Radiant' else '' }}>Radiant</option>
+                                {% if diamond_shapes %}
+                                    {% for shape in diamond_shapes %}
+                                    <option value="{{ shape }}" {{ 'selected' if listing and listing.center_shape == shape else '' }}>{{ shape }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option value="Round" {{ 'selected' if listing and listing.center_shape == 'Round' else '' }}>Round</option>
+                                    <option value="Princess" {{ 'selected' if listing and listing.center_shape == 'Princess' else '' }}>Princess</option>
+                                    <option value="Cushion" {{ 'selected' if listing and listing.center_shape == 'Cushion' else '' }}>Cushion</option>
+                                    <option value="Emerald" {{ 'selected' if listing and listing.center_shape == 'Emerald' else '' }}>Emerald</option>
+                                    <option value="Oval" {{ 'selected' if listing and listing.center_shape == 'Oval' else '' }}>Oval</option>
+                                    <option value="Radiant" {{ 'selected' if listing and listing.center_shape == 'Radiant' else '' }}>Radiant</option>
+                                    <option value="Asscher" {{ 'selected' if listing and listing.center_shape == 'Asscher' else '' }}>Asscher</option>
+                                    <option value="Marquise" {{ 'selected' if listing and listing.center_shape == 'Marquise' else '' }}>Marquise</option>
+                                    <option value="Heart" {{ 'selected' if listing and listing.center_shape == 'Heart' else '' }}>Heart</option>
+                                    <option value="Pear" {{ 'selected' if listing and listing.center_shape == 'Pear' else '' }}>Pear</option>
+                                {% endif %}
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
@@ -277,11 +288,17 @@
                     <!-- Images -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h6 class="text-secondary mb-3">Product Images</h6>
+                            <h6 class="text-secondary mb-3">Product Images for Gallery</h6>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Gallery Integration:</strong> Images will be automatically organized in the gallery structure: 
+                                <code>Category/Shape/SKU/</code> and will appear in the main gallery.
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="image_0" class="form-label">Main Image</label>
+                            <label for="image_0" class="form-label">Main Image *</label>
                             <input type="file" class="form-control" id="image_0" name="image_0" accept="image/*">
+                            <small class="text-muted">This will be the primary gallery thumbnail</small>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="image_1" class="form-label">Image 2</label>
@@ -298,6 +315,26 @@
                         <div class="col-md-6 mb-3">
                             <label for="image_4" class="form-label">Image 5</label>
                             <input type="file" class="form-control" id="image_4" name="image_4" accept="image/*">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_5" class="form-label">Image 6</label>
+                            <input type="file" class="form-control" id="image_5" name="image_5" accept="image/*">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_6" class="form-label">Image 7</label>
+                            <input type="file" class="form-control" id="image_6" name="image_6" accept="image/*">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_7" class="form-label">Image 8</label>
+                            <input type="file" class="form-control" id="image_7" name="image_7" accept="image/*">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_8" class="form-label">Image 9</label>
+                            <input type="file" class="form-control" id="image_8" name="image_8" accept="image/*">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="image_9" class="form-label">Image 10</label>
+                            <input type="file" class="form-control" id="image_9" name="image_9" accept="image/*">
                         </div>
                     </div>
 

@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Import Gallery - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-download me-2"></i>Import Gallery Items
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.listings') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Listings
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Import Existing Gallery Items</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>What this does:</strong> This will scan your existing gallery photos and create editable listings for each item, allowing you to manage them from the admin panel.
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h4 class="text-primary">{{ existing_count }}</h4>
+                                <small class="text-muted">Existing Listings</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h4 class="text-success">
+                                    <i class="fas fa-folder"></i>
+                                </h4>
+                                <small class="text-muted">Gallery Photos Found</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Import Process:</h6>
+                    <ol class="text-muted">
+                        <li>Scans the <code>WMD_Photos_NoVideos</code> directory</li>
+                        <li>Creates listings for items not already in the database</li>
+                        <li>Sets default prices (you can edit these later)</li>
+                        <li>Makes all items active and visible in the gallery</li>
+                        <li>Skips items that already have listings</li>
+                    </ol>
+                </div>
+                
+                <form method="POST" onsubmit="return confirm('Are you sure you want to import gallery items? This will create listings for all photos not already in the system.')">
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-download me-2"></i>Import Gallery Items
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <small class="text-muted">
+                        <strong>Note:</strong> After importing, you can edit each listing to add proper pricing, descriptions, and stone details. Items will be immediately visible in the gallery.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

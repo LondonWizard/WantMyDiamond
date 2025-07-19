@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Fine Jewelry Gallery - Want My Diamond{% endblock %}
+
+{% block extra_css %}
+<style>
+    .category-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .category-image {
+        height: 250px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .category-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .category-card:hover .category-image img {
+        transform: scale(1.1);
+    }
+    
+    .category-icon {
+        font-size: 4rem;
+        color: white;
+        opacity: 0.8;
+    }
+    
+    .category-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 100px 0;
+        margin-bottom: 80px;
+    }
+    
+    .stat-counter {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <img src="{{ url_for('static', filename='uploads/wmdlogo.jpg') }}" alt="Want My Diamond" 
+                     class="mb-4" style="max-width: 150px; height: auto;">
+                <h1 class="display-4 mb-4">Fine Jewelry Gallery</h1>
+                <p class="lead mb-4">Discover our exquisite collection of handcrafted jewelry. Each piece is carefully curated and can be customized to your exact specifications.</p>
+                <p class="mb-4">
+                    <i class="fas fa-map-marker-alt me-2"></i>Located in Los Angeles, California
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-counter">
+                    <div class="stat-number" id="total-items">0</div>
+                    <h6>Jewelry Pieces</h6>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-counter">
+                    <div class="stat-number">{{ categories|length }}</div>
+                    <h6>Categories</h6>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-counter">
+                    <div class="stat-number">{{ photo_structure|length }}</div>
+                    <h6>Collections</h6>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-counter">
+                    <div class="stat-number">100%</div>
+                    <h6>Customizable</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 mb-3">Browse Our Collections</h2>
+            <p class="lead text-muted">Each category features unique designs that can be customized with your preferred metals, stones, and sizes.</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for category_key, category_info in categories.items() %}
+                {% if category_key in photo_structure %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="card category-card h-100">
+                        <div class="category-image">
+                            {% set first_shape = photo_structure[category_key].keys()|list|first %}
+                            {% set first_item = photo_structure[category_key][first_shape][0] if photo_structure[category_key][first_shape] %}
+                            {% if first_item %}
+                                <img src="{{ first_item.thumbnail }}" alt="{{ category_info.name }}">
+                            {% endif %}
+                            <div class="category-overlay">
+                                {% if category_key == 'Engagement Ring' %}
+                                    <i class="fas fa-ring category-icon"></i>
+                                {% elif category_key == 'Bridal Set' %}
+                                    <i class="fas fa-heart category-icon"></i>
+                                {% elif category_key == 'Eternity Bands' %}
+                                    <i class="fas fa-circle category-icon"></i>
+                                {% elif category_key == 'Earrings' %}
+                                    <i class="fas fa-gem category-icon"></i>
+                                {% elif category_key == 'Bracelets' %}
+                                    <i class="fas fa-circle-notch category-icon"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ category_info.name }}</h5>
+                            <p class="card-text text-muted">{{ category_info.description }}</p>
+                            <div class="mb-3">
+                                {% set item_count = photo_structure[category_key].values()|map('length')|sum %}
+                                <small class="text-primary">{{ item_count }} pieces available</small>
+                            </div>
+                            <a href="{{ url_for('gallery.category_view', category_name=category_key) }}" 
+                               class="btn btn-primary">
+                                Explore Collection
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-tools fa-3x text-primary"></i>
+                    </div>
+                    <h5>Custom Made</h5>
+                    <p class="text-muted">Every piece can be customized with your choice of metals, stones, and sizing to create your perfect jewelry.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-certificate fa-3x text-primary"></i>
+                    </div>
+                    <h5>DIA Certified</h5>
+                    <p class="text-muted">Professional appraisal services through the Diamond Institute of America for authenticity and value certification.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-star fa-3x text-primary"></i>
+                    </div>
+                    <h5>Premium Quality</h5>
+                    <p class="text-muted">Hand-selected diamonds and precious stones with the finest craftsmanship for lasting beauty.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Simple counter animation for total items
+    var totalItems = 50; // This will be calculated dynamically later
+    
+    // Animate counter
+    $({ Counter: 0 }).animate({ Counter: totalItems }, {
+        duration: 2000,
+        easing: 'swing',
+        step: function () {
+            $('#total-items').text(Math.ceil(this.Counter));
+        }
+    });
+});
+</script>
+{% endblock %} 

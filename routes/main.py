@@ -80,6 +80,18 @@ def contact():
         
         return redirect(url_for('main.messages'))
     
+    # Handle GET request - check for auto-redirect from gallery
+    email = request.args.get('email')
+    auto_redirect = request.args.get('auto_redirect')
+    
+    if email and auto_redirect:
+        # Find the contact and set up session
+        contact = Contact.query.filter_by(email=email).first()
+        if contact:
+            session['contact_id'] = contact.id
+            flash('Your inquiry has been received! You can continue the conversation below.', 'success')
+            return redirect(url_for('main.messages'))
+    
     return render_template('contact.html')
 
 @main_bp.route('/messages')

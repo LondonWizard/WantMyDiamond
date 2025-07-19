@@ -56,6 +56,16 @@ def create_app(config_name=None):
         except:
             return {}
     
+    @app.template_filter('nl2br')
+    def nl2br(value):
+        """Convert newlines to HTML break tags"""
+        if not value:
+            return ''
+        # Import Markup to mark the string as safe HTML
+        from markupsafe import Markup
+        # Replace newlines with <br> tags and mark as safe
+        return Markup(str(value).replace('\n', '<br>\n'))
+
     # Import models (after db initialization)
     from models import User, Listing, Message, Contact, CustomRequest, AppraisalRequest
     
@@ -68,10 +78,12 @@ def create_app(config_name=None):
     from routes.main import main_bp
     from routes.admin import admin_bp
     from routes.api import api_bp
+    from routes.gallery import gallery_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(gallery_bp, url_prefix='/gallery')
     
     # Create tables
     with app.app_context():

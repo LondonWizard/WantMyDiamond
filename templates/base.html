@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Want My Diamond - Fine Jewelry in Los Angeles{% endblock %}</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='favicon-192x192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='favicon-512x512.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    
+    <!-- Web App Manifest (for PWA support) -->
+    <meta name="theme-color" content="#0f1419">
+    <meta name="msapplication-TileColor" content="#0f1419">
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
@@ -160,8 +172,9 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fas fa-gem me-2"></i>Want My Diamond
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='uploads/wmdlogo.jpg') }}" alt="Want My Diamond" 
+                     style="height: 70px; width: auto;">
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -174,7 +187,7 @@
                         <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.gallery') }}">Gallery</a>
+                        <a class="nav-link" href="{{ url_for('gallery.index') }}">Gallery</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.custom_request') }}">Custom Design</a>
@@ -238,7 +251,7 @@
                 <div class="col-md-4">
                     <h5>Services</h5>
                     <ul class="list-unstyled">
-                        <li><a href="{{ url_for('main.gallery') }}" class="text-white-50">Fine Jewelry Gallery</a></li>
+                        <li><a href="{{ url_for('gallery.index') }}" class="text-white-50">Fine Jewelry Gallery</a></li>
                         <li><a href="{{ url_for('main.custom_request') }}" class="text-white-50">Custom Design</a></li>
                         <li><a href="{{ url_for('main.appraisal') }}" class="text-white-50">DIA Appraisal Service</a></li>
                         <li><a href="{{ url_for('main.contact') }}" class="text-white-50">Consultation</a></li>
@@ -253,7 +266,7 @@
                     </ul>
                     <div class="mt-3">
                         <h6>DIA Certified Appraisals</h6>
-                        <small class="text-white-50">Diamond Association of America certified appraisal services available for $50</small>
+                        <small class="text-white-50">Diamond Institute of America certified appraisal services available for $50</small>
                     </div>
                 </div>
             </div>

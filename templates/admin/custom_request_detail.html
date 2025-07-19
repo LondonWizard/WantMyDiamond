@@ -1,0 +1,416 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Custom Request Details - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">
+            <i class="fas fa-palette me-2"></i>Custom Request Details
+        </h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.custom_requests') }}">Custom Requests</a></li>
+                <li class="breadcrumb-item active">{{ request.title }}</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('admin.custom_requests') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Requests
+            </a>
+            <a href="{{ url_for('admin.view_messages', contact_id=request.contact.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-comments me-2"></i>View Messages
+            </a>
+        </div>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-cog me-2"></i>Update Status
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" data-status="pending">Mark as Pending</a></li>
+                <li><a class="dropdown-item" href="#" data-status="in_progress">Mark as In Progress</a></li>
+                <li><a class="dropdown-item" href="#" data-status="completed">Mark as Completed</a></li>
+                <li><a class="dropdown-item" href="#" data-status="cancelled">Mark as Cancelled</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Status Alert -->
+<div class="alert alert-{{ 'success' if request.status == 'completed' else 'warning' if request.status == 'in_progress' else 'info' if request.status == 'pending' else 'secondary' }}" role="alert">
+    <i class="fas fa-info-circle me-2"></i>
+    <strong>Status:</strong> {{ request.status.title().replace('_', ' ') }}
+    <small class="text-muted ms-2">| Updated {{ request.updated_at.strftime('%B %d, %Y at %I:%M %p') if request.updated_at else request.created_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+</div>
+
+<!-- Customer Information -->
+<div class="row mb-4">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>Customer Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="avatar-circle-lg mb-2">
+                        {{ request.contact.name[0].upper() }}
+                    </div>
+                    <h6>{{ request.contact.name }}</h6>
+                    <p class="text-muted mb-1">{{ request.contact.email }}</p>
+                    {% if request.contact.phone %}
+                    <p class="text-muted mb-1">{{ request.contact.phone }}</p>
+                    {% endif %}
+                </div>
+                
+                <hr>
+                
+                <div class="customer-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-calendar me-2 text-muted"></i>
+                        <small>Customer since {{ request.contact.created_at.strftime('%B %d, %Y') }}</small>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-palette me-2 text-muted"></i>
+                        <small>{{ request.contact.custom_requests|length }} custom request{% if request.contact.custom_requests|length != 1 %}s{% endif %}</small>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-comments me-2 text-muted"></i>
+                        <small>{{ request.contact.messages|length }} message{% if request.contact.messages|length != 1 %}s{% endif %}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-gem me-2"></i>Request Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <label class="detail-label">Project Title</label>
+                            <p class="detail-value">{{ request.title }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <label class="detail-label">Budget Range</label>
+                            <p class="detail-value">
+                                {% if request.budget_range %}
+                                    <span class="badge bg-success">{{ request.budget_range }}</span>
+                                {% else %}
+                                    <span class="text-muted">Not specified</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-group">
+                    <label class="detail-label">Description</label>
+                    <div class="detail-value description-box">
+                        {{ request.description|nl2br }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <label class="detail-label">Request Date</label>
+                            <p class="detail-value">{{ request.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-group">
+                            <label class="detail-label">Last Updated</label>
+                            <p class="detail-value">
+                                {% if request.updated_at %}
+                                    {{ request.updated_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                {% else %}
+                                    {{ request.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reference Images -->
+{% if request.reference_images %}
+    {% set reference_images = request.reference_images | from_json %}
+    {% if reference_images %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-images me-2"></i>Reference Images
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for image in reference_images %}
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                            <div class="image-card">
+                                <img src="{{ image }}" alt="Reference Image" class="img-fluid rounded">
+                                <div class="image-overlay">
+                                    <a href="{{ image }}" target="_blank" class="btn btn-light btn-sm">
+                                        <i class="fas fa-expand-alt"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+<!-- Reference Links -->
+{% if request.reference_links %}
+    {% set reference_links = request.reference_links | from_json %}
+    {% if reference_links %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-link me-2"></i>Reference Links
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for link in reference_links %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-external-link-alt me-2 text-muted"></i>
+                                <a href="{{ link }}" target="_blank" class="text-decoration-none">{{ link }}</a>
+                            </div>
+                            <a href="{{ link }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt me-1"></i>Open
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+<!-- Admin Notes Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-sticky-note me-2"></i>Admin Notes
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="notes-form">
+                    <div class="mb-3">
+                        <label for="admin-notes" class="form-label">Internal Notes</label>
+                        <textarea class="form-control" id="admin-notes" name="admin_notes" rows="4" 
+                                  placeholder="Add internal notes about this custom request...">{{ request.admin_notes or '' }}</textarea>
+                        <small class="text-muted">These notes are only visible to admin users</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Notes
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-circle-lg {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0 auto;
+    }
+    
+    .customer-stats {
+        margin-top: 1rem;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .detail-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: var(--secondary-color);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .detail-value {
+        font-size: 1rem;
+        margin-bottom: 0;
+        color: #333;
+    }
+    
+    .description-box {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        min-height: 100px;
+        line-height: 1.6;
+    }
+    
+    .image-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 0.375rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+    
+    .image-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .image-card:hover .image-overlay {
+        opacity: 1;
+    }
+    
+    .image-card:hover img {
+        transform: scale(1.1);
+    }
+    
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+        border-top: none;
+    }
+    
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Handle status updates
+    $('.dropdown-item[data-status]').on('click', function(e) {
+        e.preventDefault();
+        
+        const status = $(this).data('status');
+        const statusText = $(this).text().trim();
+        
+        if (confirm(`Are you sure you want to change the status to "${statusText}"?`)) {
+            $.ajax({
+                url: '/admin/custom_requests/{{ request.id }}/status',
+                method: 'POST',
+                data: {
+                    status: status
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Error updating status: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Error updating status. Please try again.');
+                }
+            });
+        }
+    });
+    
+    // Handle notes form submission
+    $('#notes-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        const notes = $('#admin-notes').val();
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        
+        // Show loading state
+        submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...').prop('disabled', true);
+        
+        $.ajax({
+            url: '/admin/custom_requests/{{ request.id }}/notes',
+            method: 'POST',
+            data: {
+                admin_notes: notes
+            },
+            success: function(response) {
+                if (response.success) {
+                    submitBtn.html('<i class="fas fa-check me-2"></i>Saved!').removeClass('btn-primary').addClass('btn-success');
+                    setTimeout(function() {
+                        submitBtn.html(originalText).removeClass('btn-success').addClass('btn-primary').prop('disabled', false);
+                    }, 2000);
+                } else {
+                    alert('Error saving notes: ' + response.message);
+                    submitBtn.html(originalText).prop('disabled', false);
+                }
+            },
+            error: function() {
+                alert('Error saving notes. Please try again.');
+                submitBtn.html(originalText).prop('disabled', false);
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

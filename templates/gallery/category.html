@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category_data.name }} - Want My Diamond{% endblock %}
+
+{% block extra_css %}
+<style>
+    .jewelry-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+    
+    .jewelry-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    
+    .jewelry-image {
+        height: 250px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .jewelry-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .jewelry-card:hover .jewelry-image img {
+        transform: scale(1.1);
+    }
+    
+    .shape-filter {
+        margin-bottom: 2rem;
+    }
+    
+    .shape-badge {
+        margin: 0.25rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .shape-badge.active {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+    }
+    
+    .breadcrumb {
+        background: none;
+        padding: 0;
+    }
+    
+    .hero-banner {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 80px 0;
+        margin-bottom: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Banner -->
+<section class="hero-banner">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb text-white-50">
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('gallery.index') }}" class="text-white">Gallery</a>
+                        </li>
+                        <li class="breadcrumb-item active text-white">{{ category_data.name }}</li>
+                    </ol>
+                </nav>
+                <h1 class="display-4 mb-3">{{ category_data.name }}</h1>
+                <p class="lead">{{ category_data.description }}</p>
+                <div class="mt-4">
+                    <span class="badge bg-white text-primary me-2">{{ items|length }} pieces</span>
+                    <span class="badge bg-white text-primary">{{ shapes|length }} shapes available</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Shape Filters -->
+<section class="shape-filter">
+    <div class="container">
+        <div class="text-center">
+            <h5 class="mb-3">Filter by Shape</h5>
+            <div>
+                <span class="badge bg-light text-dark shape-badge active" data-shape="all">
+                    All Shapes
+                </span>
+                {% for shape in shapes %}
+                <span class="badge bg-light text-dark shape-badge" data-shape="{{ shape }}">
+                    {{ shape }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Jewelry Grid -->
+<section class="py-4">
+    <div class="container">
+        <div class="row g-4" id="jewelry-grid">
+            {% for shape, shape_items in photo_structure.items() %}
+                {% for item in shape_items %}
+                <div class="col-lg-4 col-md-6 jewelry-item" data-shape="{{ shape }}">
+                    <div class="card jewelry-card h-100">
+                        <div class="jewelry-image">
+                            <img src="{{ item.thumbnail }}" alt="{{ item.title }}" loading="lazy">
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <span class="badge bg-primary">{{ shape }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ item.title }}</h6>
+                            <p class="card-text text-muted">SKU: {{ item.sku }}</p>
+                            <div class="mb-3">
+                                <small class="text-primary">{{ item.images|length }} photos available</small>
+                            </div>
+                            <div class="d-grid">
+                                <a href="{{ url_for('gallery.item_detail', category_name=category_name, shape=shape, sku=item.sku) }}" 
+                                   class="btn btn-primary">
+                                    View Details & Customize
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        
+        {% if not items %}
+        <div class="text-center py-5">
+            <i class="fas fa-gem fa-3x text-muted mb-3"></i>
+            <h4>No items found in this category</h4>
+            <p class="text-muted">Please check back later for new additions to our collection.</p>
+            <a href="{{ url_for('gallery.index') }}" class="btn btn-primary">Browse All Categories</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Customization Info -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h3 class="mb-4">Customization Options</h3>
+                <p class="lead text-muted mb-4">Every piece in our {{ category_data.name|lower }} collection can be customized to your exact specifications.</p>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-box">
+                            <i class="fas fa-resize-alt fa-2x text-primary mb-3"></i>
+                            <h6>Ring Sizes</h6>
+                            <small class="text-muted">Size 3.0 to 12.5 in 0.25 increments</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-box">
+                            <i class="fas fa-palette fa-2x text-primary mb-3"></i>
+                            <h6>Metal Options</h6>
+                            <small class="text-muted">14K, 18K, 19K Gold, Platinum, Palladium</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-box">
+                            <i class="fas fa-gem fa-2x text-primary mb-3"></i>
+                            <h6>Diamond Options</h6>
+                            <small class="text-muted">Color grades D-M, all clarity grades</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Shape filtering
+    $('.shape-badge').click(function() {
+        $('.shape-badge').removeClass('active');
+        $(this).addClass('active');
+        
+        const selectedShape = $(this).data('shape');
+        
+        if (selectedShape === 'all') {
+            $('.jewelry-item').show();
+        } else {
+            $('.jewelry-item').hide();
+            $(`.jewelry-item[data-shape="${selectedShape}"]`).show();
+        }
+    });
+    
+    // Smooth scroll for breadcrumb links
+    $('a[href^="#"]').on('click', function(event) {
+        var target = $(this.getAttribute('href'));
+        if (target.length) {
+            event.preventDefault();
+            $('html, body').stop().animate({
+                scrollTop: target.offset().top - 100
+            }, 1000);
+        }
+    });
+});
+</script>
+{% endblock %} 

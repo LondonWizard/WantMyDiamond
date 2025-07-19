@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - Want My Diamond{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-gallery {
+        position: sticky;
+        top: 100px;
+    }
+    
+    .main-image {
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    
+    .main-image img {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .main-image:hover img {
+        transform: scale(1.05);
+    }
+    
+    .thumbnail-gallery {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .thumbnail {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color 0.3s ease;
+    }
+    
+    .thumbnail.active {
+        border-color: var(--primary-color);
+    }
+    
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .customization-panel {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .option-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .option-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .option-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #dee2e6;
+        background: white;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .option-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .option-btn.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+    
+    .diamond-sample {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+        border: 2px solid #ddd;
+    }
+    
+    /* Diamond color samples */
+    .color-D { background: linear-gradient(45deg, #ffffff, #f8f9fa); }
+    .color-E { background: linear-gradient(45deg, #ffffff, #f1f3f4); }
+    .color-F { background: linear-gradient(45deg, #f8f9fa, #e9ecef); }
+    .color-G { background: linear-gradient(45deg, #f1f3f4, #dee2e6); }
+    .color-H { background: linear-gradient(45deg, #fffef7, #faf8f0); }
+    .color-I { background: linear-gradient(45deg, #faf8f0, #f5f2e8); }
+    .color-J { background: linear-gradient(45deg, #f5f2e8, #f0ede0); }
+    .color-K { background: linear-gradient(45deg, #f0ede0, #ebe7d8); }
+    .color-L { background: linear-gradient(45deg, #ebe7d8, #e6e2d0); }
+    .color-M { background: linear-gradient(45deg, #e6e2d0, #e1dcc8); }
+    
+    .breadcrumb {
+        background: none;
+        padding: 0;
+    }
+    
+    .contact-form {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .price-display {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin: 1rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('gallery.index') }}">Gallery</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('gallery.category_view', category_name=category_name) }}">{{ category_data.name }}</a>
+            </li>
+            <li class="breadcrumb-item active">{{ item.title }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Product Gallery -->
+        <div class="col-lg-6">
+            <div class="product-gallery">
+                <!-- Main Image -->
+                <div class="main-image">
+                    <img id="main-image" src="{{ item.thumbnail }}" alt="{{ item.title }}">
+                </div>
+                
+                <!-- Thumbnail Gallery -->
+                <div class="thumbnail-gallery">
+                    {% for image in item.images %}
+                    <div class="thumbnail {% if loop.first %}active{% endif %}" onclick="changeMainImage('{{ image }}', this)">
+                        <img src="{{ image }}" alt="{{ item.title }}">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Details -->
+        <div class="col-lg-6">
+            <div class="product-details">
+                <h1 class="mb-3">{{ item.title }}</h1>
+                
+                <div class="mb-3">
+                    <span class="badge bg-success me-2">
+                        <i class="fas fa-gem me-1"></i>{{ shape }} Shape
+                    </span>
+                    <span class="badge bg-primary me-2">{{ category_data.name }}</span>
+                    <span class="badge bg-light text-dark">SKU: {{ item.sku }}</span>
+                </div>
+                
+                <div class="price-display">
+                    Request Quote for Pricing
+                </div>
+                
+                <p class="lead text-muted mb-4">
+                    This exquisite {{ shape.lower() }} {{ category_name.lower() }} can be fully customized to your specifications. 
+                    Choose from our premium selection of metals, stones, and sizes to create your perfect piece.
+                </p>
+                
+                <!-- Stone Configuration Info -->
+                {% if category_data.stone_config == 'center_and_side' %}
+                <div class="alert alert-info">
+                    <i class="fas fa-gem me-2"></i>
+                    <strong>Stone Configuration:</strong> This piece features a center stone with optional side stones for enhanced brilliance.
+                </div>
+                {% elif category_data.stone_config == 'center_only' %}
+                <div class="alert alert-info">
+                    <i class="fas fa-gem me-2"></i>
+                    <strong>Stone Configuration:</strong> This piece features a beautiful center stone design.
+                </div>
+                {% elif category_data.stone_config == 'side_only' %}
+                <div class="alert alert-info">
+                    <i class="fas fa-gem me-2"></i>
+                    <strong>Stone Configuration:</strong> This piece features continuous side stones for elegant sparkle.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Customization Options -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="customization-panel">
+                <h3 class="mb-4 text-center">Customize Your Piece</h3>
+                
+                <form id="customization-form">
+                    <div class="row">
+                        <!-- Ring Size (for applicable items) -->
+                        {% if category_name in ['Engagement Ring', 'Bridal Set', 'Eternity Bands'] %}
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <label class="form-label">
+                                    <i class="fas fa-resize-alt me-2"></i>Ring Size
+                                </label>
+                                <select class="form-select" name="ring_size">
+                                    <option value="">Select Size</option>
+                                    {% for size in ring_sizes %}
+                                    <option value="{{ size }}">{{ size }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Metal Options -->
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <label class="form-label">
+                                    <i class="fas fa-palette me-2"></i>Metal Type
+                                </label>
+                                <div class="option-selector">
+                                    {% for metal_key, metal_data in metal_options.items() %}
+                                    <div class="option-btn" data-metal="{{ metal_key }}">
+                                        {{ metal_data.name }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Metal Finish -->
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <label class="form-label">Metal Finish</label>
+                                <div class="option-selector" id="finish-options">
+                                    <!-- Populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Diamond Options (if applicable) -->
+                        {% if category_data.stone_config in ['center_and_side', 'center_only'] %}
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <label class="form-label">
+                                    <i class="fas fa-gem me-2"></i>Diamond Shape (Selected)
+                                </label>
+                                <div class="alert alert-primary mb-0">
+                                    <strong>{{ shape }}</strong> - Shape is determined by your selection
+                                    <small class="d-block text-muted">To change shape, select a different item from the gallery</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <label class="form-label">
+                                    <i class="fas fa-gem me-2"></i>Diamond Color
+                                </label>
+                                <div class="option-selector">
+                                    {% for color_key, color_data in diamond_colors.items() %}
+                                    <div class="option-btn" data-color="{{ color_key }}" title="{{ color_data.description }}">
+                                        <span class="diamond-sample color-{{ color_key }}"></span>
+                                        {{ color_key }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <label class="form-label">Diamond Clarity</label>
+                                <div class="option-selector">
+                                    {% for clarity_key, clarity_data in diamond_clarity.items() %}
+                                    <div class="option-btn" data-clarity="{{ clarity_key }}" title="{{ clarity_data.description }}">
+                                        {{ clarity_key }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <label class="form-label">Diamond Cut Quality</label>
+                                <div class="option-selector">
+                                    {% for cut in diamond_cuts %}
+                                    <div class="option-btn" data-cut="{{ cut }}">
+                                        {{ cut }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Special Requests -->
+                        <div class="col-12">
+                            <div class="option-group">
+                                <label class="form-label">Special Requests or Notes</label>
+                                <textarea class="form-control" name="special_requests" rows="3" placeholder="Any specific customizations, engravings, or special requests..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Form -->
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="contact-form">
+                <h4 class="mb-4 text-center">Request Information & Quote</h4>
+                
+                <form id="inquiry-form">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Your Name *</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" name="phone">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Preferred Contact Method</label>
+                            <select class="form-select" name="contact_method">
+                                <option value="email">Email</option>
+                                <option value="phone">Phone</option>
+                                <option value="text">Text Message</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mb-4">
+                            <label class="form-label">Your Message</label>
+                            <textarea class="form-control" name="message" rows="4" placeholder="Please let us know about your timeline, budget range, or any questions you have about this piece..."></textarea>
+                        </div>
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Request Quote & Information
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Images -->
+    {% if item.images|length > 4 %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="mb-4">Additional Views</h4>
+            <div class="row">
+                {% for image in item.images[4:] %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card">
+                        <img src="{{ image }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Image gallery functionality
+function changeMainImage(src, thumbnailElement) {
+    document.getElementById('main-image').src = src;
+    
+    // Update active thumbnail
+    document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
+    thumbnailElement.classList.add('active');
+}
+
+// Customization options functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Metal options - will be populated by server-side data
+    const metalOptions = {
+        '14k_gold': { 'name': '14K Gold', 'finishes': ['White', 'Yellow', 'Rose', '2-Tone'] },
+        '18k_gold': { 'name': '18K Gold', 'finishes': ['White', 'Yellow', 'Rose', '2-Tone'] },
+        '19k_gold': { 'name': '19K Gold', 'finishes': ['White', 'Yellow', 'Rose', '2-Tone'] },
+        'platinum': { 'name': 'Platinum', 'finishes': ['Platinum'] },
+        'palladium': { 'name': 'Palladium', 'finishes': ['Palladium'] }
+    };
+    
+    // Handle metal selection
+    document.querySelectorAll('[data-metal]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active from other metal buttons
+            document.querySelectorAll('[data-metal]').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update finish options
+            const metalKey = this.dataset.metal;
+            const finishContainer = document.getElementById('finish-options');
+            finishContainer.innerHTML = '';
+            
+            if (metalOptions[metalKey]) {
+                metalOptions[metalKey].finishes.forEach(finish => {
+                    const finishBtn = document.createElement('div');
+                    finishBtn.className = 'option-btn';
+                    finishBtn.dataset.finish = finish;
+                    finishBtn.textContent = finish;
+                    finishBtn.addEventListener('click', function() {
+                        document.querySelectorAll('[data-finish]').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+                    finishContainer.appendChild(finishBtn);
+                });
+            }
+        });
+    });
+    
+    // Handle other option selections
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const group = this.parentElement;
+            group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    
+    // Handle form submission
+    document.getElementById('inquiry-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Collect customization options
+        const customizations = {};
+        document.querySelectorAll('.option-btn.active').forEach(btn => {
+            Object.keys(btn.dataset).forEach(key => {
+                customizations[key] = btn.dataset[key];
+            });
+        });
+        
+        // Collect form data
+        const formData = new FormData(this);
+        const inquiryData = {};
+        formData.forEach((value, key) => {
+            inquiryData[key] = value;
+        });
+        
+        // Add item and customization data
+        inquiryData.item_sku = '{{ item.sku }}';
+        inquiryData.item_title = '{{ item.title }}';
+        inquiryData.category = '{{ category_name }}';
+        inquiryData.shape = '{{ shape }}'; // Locked shape from item selection
+        inquiryData.customizations = customizations;
+        inquiryData.customizations.shape = '{{ shape }}'; // Ensure shape is always included
+        
+        // Send to server
+        fetch('{{ url_for("gallery.request_info") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(inquiryData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert(data.message);
+                // Redirect to messaging system
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    // Fallback redirect
+                    window.location.href = `/contact?email=${inquiryData.email}&auto_redirect=true`;
+                }
+            } else {
+                alert(data.message || 'There was an error sending your request. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('There was an error sending your request. Please try again.');
+        });
+    });
+});
+</script>
+{% endblock %} 
