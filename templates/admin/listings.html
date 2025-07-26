@@ -11,9 +11,26 @@
                 <i class="fas fa-download me-2"></i>Import Gallery
             </a>
         </div>
-        <a href="{{ url_for('admin.new_listing') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Add New Listing
-        </a>
+        <div class="btn-group">
+            <a href="{{ url_for('admin.new_listing_split') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add New Listing
+            </a>
+            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" 
+                    data-bs-toggle="dropdown">
+                <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('admin.new_listing_split') }}">
+                    <i class="fas fa-columns me-2"></i>Split Editor (Recommended)
+                </a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.new_listing_overlay') }}">
+                    <i class="fas fa-eye me-2"></i>Visual Overlay Editor
+                </a></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.new_listing') }}">
+                    <i class="fas fa-list me-2"></i>Traditional Form
+                </a></li>
+            </ul>
+        </div>
     </div>
 </div>
 
@@ -119,13 +136,40 @@
                         <td>{{ listing.created_at.strftime('%Y-%m-%d') }}</td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('main.listing_detail', listing_id=listing.id) }}" 
+                                {% if listing.category and listing.center_shape and listing.sku %}
+                                <a href="{{ url_for('gallery.item_detail', category_name=listing.category, shape=listing.center_shape, sku=listing.sku) }}" 
                                    class="btn btn-outline-primary" target="_blank" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ url_for('admin.edit_listing', listing_id=listing.id) }}" 
-                                   class="btn btn-outline-secondary" title="Edit">
-                                    <i class="fas fa-edit"></i>
+                                {% else %}
+                                <button class="btn btn-outline-primary" disabled title="Missing category, shape, or SKU">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% endif %}
+                                <div class="btn-group">
+                                    <a href="{{ url_for('admin.edit_listing_split', listing_id=listing.id) }}" 
+                                       class="btn btn-outline-secondary" title="Split Editor">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" 
+                                            data-bs-toggle="dropdown" title="More Edit Options">
+                                        <span class="visually-hidden">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ url_for('admin.edit_listing_split', listing_id=listing.id) }}">
+                                            <i class="fas fa-columns me-2"></i>Split Editor
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin.edit_listing_overlay', listing_id=listing.id) }}">
+                                            <i class="fas fa-eye me-2"></i>Visual Overlay
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin.edit_listing', listing_id=listing.id) }}">
+                                            <i class="fas fa-list me-2"></i>Traditional Form
+                                        </a></li>
+                                    </ul>
+                                </div>
+                                <a href="{{ url_for('admin.manage_images', listing_id=listing.id) }}" 
+                                   class="btn btn-outline-info" title="Manage Images">
+                                    <i class="fas fa-images"></i>
                                 </a>
                                 <button class="btn btn-outline-danger" onclick="confirmDelete({{ listing.id }})" title="Delete">
                                     <i class="fas fa-trash"></i>

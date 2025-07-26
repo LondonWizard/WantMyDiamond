@@ -1,0 +1,921 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Images - {{ listing.title }} - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<!-- Pintura Image Editor CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@pqina/pintura/pintura.css">
+
+<style>
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.image-item {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px;
+    background: white;
+    transition: all 0.3s ease;
+    cursor: move;
+    position: relative;
+}
+
+.image-item:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+}
+
+.image-item.sortable-ghost {
+    opacity: 0.4;
+}
+
+.image-item.sortable-chosen {
+    transform: scale(1.05);
+}
+
+.image-preview {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.image-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.thumbnail-badge {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+
+.order-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #007bff;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+
+.drag-handle {
+    cursor: grab;
+    color: #6c757d;
+    font-size: 1.2em;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.image-metadata {
+    margin-top: 10px;
+}
+
+.image-metadata input {
+    font-size: 0.85em;
+    margin-bottom: 5px;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Windows 10 Style Image Editor Modal */
+.image-editor-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #f3f3f3;
+    z-index: 10000;
+    display: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.image-editor-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #f3f3f3;
+}
+
+.image-editor-header {
+    background: #ffffff;
+    padding: 12px 20px;
+    border-bottom: 1px solid #e1e5e9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.image-editor-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f3f3f3;
+}
+
+#imageEditor {
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+    max-height: 80vh;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.editor-controls {
+    background: #ffffff;
+    padding: 12px 20px;
+    border-top: 1px solid #e1e5e9;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
+}
+
+.win10-btn {
+    background: #0078d4;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 2px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.win10-btn:hover {
+    background: #106ebe;
+}
+
+.win10-btn.secondary {
+    background: #f3f2f1;
+    color: #323130;
+    border: 1px solid #8a8886;
+}
+
+.win10-btn.secondary:hover {
+    background: #edebe9;
+}
+
+.editing-indicator {
+    position: absolute;
+    top: 5px;
+    right: 25px;
+    background: #ff6b35;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7em;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-images me-2"></i>
+        Manage Images - {{ listing.title }}
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-outline-success" onclick="migrateImages()">
+                <i class="fas fa-sync me-2"></i>Migrate Legacy Images
+            </button>
+        </div>
+        <a href="{{ url_for('admin.listings') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Listings
+        </a>
+    </div>
+</div>
+
+<!-- Listing Info -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>{{ listing.title }}</h5>
+                        <p class="text-muted mb-1"><strong>SKU:</strong> {{ listing.sku }}</p>
+                        <p class="text-muted mb-1"><strong>Category:</strong> {{ listing.category }}</p>
+                        <p class="text-muted mb-0"><strong>Shape:</strong> {{ listing.center_shape }}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <p class="mb-1"><strong>Total Images:</strong> <span id="image-count">{{ listing.listing_images|length }}</span></p>
+                        <p class="mb-0"><strong>Thumbnail Set:</strong> 
+                            <span id="thumbnail-status">
+                                {% if listing.get_thumbnail_image() %}
+                                    <span class="text-success">Yes</span>
+                                {% else %}
+                                    <span class="text-warning">No</span>
+                                {% endif %}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Zone -->
+<div class="upload-zone" id="upload-zone">
+    <div class="upload-content">
+        <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-muted"></i>
+        <h5>Drag & Drop Images Here</h5>
+        <p class="text-muted">or click to select files</p>
+        <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('file-input').click();">
+            <i class="fas fa-plus me-2"></i>Add Images
+        </button>
+    </div>
+</div>
+
+<!-- Images Grid -->
+<div id="images-container">
+    {% if listing.listing_images %}
+    <div class="image-grid" id="image-grid">
+        {% for image in listing.get_ordered_images() %}
+        <div class="image-item" data-image-id="{{ image.id }}" data-order="{{ image.display_order }}">
+            {% if image.is_thumbnail %}
+            <div class="thumbnail-badge">
+                <i class="fas fa-star"></i> Thumbnail
+            </div>
+            {% endif %}
+            <div class="order-badge">{{ image.display_order + 1 }}</div>
+            
+            <img src="{{ image.image_url }}" alt="{{ image.alt_text or 'Image' }}" class="image-preview">
+            
+            <div class="image-controls">
+                <div class="drag-handle">
+                    <i class="fas fa-grip-vertical"></i>
+                </div>
+                                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('admin.image_editor', listing_id=listing.id, image_id=image.id) }}" 
+                                       class="btn btn-outline-primary" title="Edit Image">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if not image.is_thumbnail %}
+                                    <button type="button" class="btn btn-outline-success" onclick="setThumbnail({{ image.id }})" title="Set as Thumbnail">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-outline-danger" onclick="deleteImage({{ image.id }})" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+            </div>
+            
+            <div class="image-metadata">
+                <input type="text" class="form-control form-control-sm" 
+                       placeholder="Alt text" 
+                       value="{{ image.alt_text or '' }}"
+                       onchange="updateImageMetadata({{ image.id }}, 'alt_text', this.value)">
+                <input type="text" class="form-control form-control-sm" 
+                       placeholder="Caption" 
+                       value="{{ image.caption or '' }}"
+                       onchange="updateImageMetadata({{ image.id }}, 'caption', this.value)">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" id="empty-state">
+        <i class="fas fa-images fa-4x mb-3"></i>
+        <h4>No Images Yet</h4>
+        <p>Upload your first image to get started</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Image Editor Modal -->
+<div id="image-editor-modal" class="image-editor-modal">
+    <div class="image-editor-container">
+        <div class="image-editor-header">
+            <h5 class="mb-0">
+                <i class="fas fa-magic me-2"></i>Edit Image
+            </h5>
+            <div class="editor-controls">
+                <button type="button" class="win10-btn" onclick="saveEditedImage()">
+                    <i class="fas fa-save me-1"></i>Save
+                </button>
+                <button type="button" class="win10-btn secondary" onclick="closeImageEditor()">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+            </div>
+        </div>
+        <div class="image-editor-content">
+            <div id="imageEditor"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center;">
+        <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+        <h4>Processing...</h4>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<!-- Pintura Image Editor -->
+<script src="https://cdn.jsdelivr.net/npm/@pqina/pintura/pintura.js"></script>
+<script>
+const listingId = {{ listing.id }};
+let sortable;
+
+// Initialize drag and drop for images
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSortable();
+    initializeUpload();
+});
+
+function initializeSortable() {
+    const imageGrid = document.getElementById('image-grid');
+    if (imageGrid) {
+        sortable = Sortable.create(imageGrid, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            handle: '.drag-handle',
+            onEnd: function(evt) {
+                reorderImages();
+            }
+        });
+    }
+}
+
+function initializeUpload() {
+    const uploadZone = document.getElementById('upload-zone');
+    const fileInput = document.getElementById('file-input');
+    
+    // Drag and drop events
+    uploadZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+    });
+    
+    uploadZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+    });
+    
+    uploadZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        uploadFiles(files);
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        uploadFiles(e.target.files);
+    });
+    
+    // Click to upload
+    uploadZone.addEventListener('click', function(e) {
+        if (e.target === uploadZone || e.target.closest('.upload-content')) {
+            fileInput.click();
+        }
+    });
+}
+
+function uploadFiles(files) {
+    showLoading();
+    
+    Array.from(files).forEach(file => {
+        if (file.type.startsWith('image/')) {
+            uploadSingleFile(file);
+        }
+    });
+}
+
+function uploadSingleFile(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    fetch(`/admin/listings/${listingId}/images/add`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addImageToGrid(data.image);
+            updateImageCount();
+            showMessage('Image uploaded successfully!', 'success');
+        } else {
+            showMessage(data.error || 'Upload failed', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Upload failed: ' + error.message, 'error');
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+function addImageToGrid(image) {
+    const emptyState = document.getElementById('empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    let imageGrid = document.getElementById('image-grid');
+    if (!imageGrid) {
+        const container = document.getElementById('images-container');
+        imageGrid = document.createElement('div');
+        imageGrid.className = 'image-grid';
+        imageGrid.id = 'image-grid';
+        container.appendChild(imageGrid);
+        initializeSortable();
+    }
+    
+    const imageItem = createImageElement(image);
+    imageGrid.appendChild(imageItem);
+}
+
+function createImageElement(image) {
+    const div = document.createElement('div');
+    div.className = 'image-item';
+    div.setAttribute('data-image-id', image.id);
+    div.setAttribute('data-order', image.display_order);
+    
+    div.innerHTML = `
+        ${image.is_thumbnail ? '<div class="thumbnail-badge"><i class="fas fa-star"></i> Thumbnail</div>' : ''}
+        <div class="order-badge">${image.display_order + 1}</div>
+        <img src="${image.url}" alt="${image.alt_text || 'Image'}" class="image-preview">
+        <div class="image-controls">
+            <div class="drag-handle">
+                <i class="fas fa-grip-vertical"></i>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-primary" onclick="editImage(${image.id}, '${image.url}')" title="Edit Image">
+                    <i class="fas fa-edit"></i>
+                </button>
+                ${!image.is_thumbnail ? `<button type="button" class="btn btn-outline-success" onclick="setThumbnail(${image.id})" title="Set as Thumbnail"><i class="fas fa-star"></i></button>` : ''}
+                <button type="button" class="btn btn-outline-danger" onclick="deleteImage(${image.id})" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="image-metadata">
+            <input type="text" class="form-control form-control-sm" 
+                   placeholder="Alt text" 
+                   value="${image.alt_text || ''}"
+                   onchange="updateImageMetadata(${image.id}, 'alt_text', this.value)">
+            <input type="text" class="form-control form-control-sm" 
+                   placeholder="Caption" 
+                   value="${image.caption || ''}"
+                   onchange="updateImageMetadata(${image.id}, 'caption', this.value)">
+        </div>
+    `;
+    
+    return div;
+}
+
+function reorderImages() {
+    const imageItems = document.querySelectorAll('.image-item');
+    const imageIds = Array.from(imageItems).map(item => parseInt(item.getAttribute('data-image-id')));
+    
+    fetch(`/admin/listings/${listingId}/images/reorder`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            image_ids: imageIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update order badges
+            imageItems.forEach((item, index) => {
+                const badge = item.querySelector('.order-badge');
+                badge.textContent = index + 1;
+                item.setAttribute('data-order', index);
+            });
+            showMessage('Images reordered successfully!', 'success');
+        } else {
+            showMessage('Failed to reorder images', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Failed to reorder images: ' + error.message, 'error');
+    });
+}
+
+function setThumbnail(imageId) {
+    fetch(`/admin/listings/${listingId}/images/${imageId}/set-thumbnail`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove thumbnail badges from all images
+            document.querySelectorAll('.thumbnail-badge').forEach(badge => badge.remove());
+            
+            // Add thumbnail badge to selected image
+            const imageItem = document.querySelector(`[data-image-id="${imageId}"]`);
+            const thumbnailBadge = document.createElement('div');
+            thumbnailBadge.className = 'thumbnail-badge';
+            thumbnailBadge.innerHTML = '<i class="fas fa-star"></i> Thumbnail';
+            imageItem.appendChild(thumbnailBadge);
+            
+            // Update thumbnail buttons
+            document.querySelectorAll('.btn-outline-success').forEach(btn => {
+                if (btn.onclick && btn.onclick.toString().includes('setThumbnail')) {
+                    btn.style.display = 'inline-block';
+                }
+            });
+            
+            // Hide thumbnail button for selected image
+            const currentButton = imageItem.querySelector('.btn-outline-success');
+            if (currentButton) currentButton.style.display = 'none';
+            
+            // Update status
+            document.getElementById('thumbnail-status').innerHTML = '<span class="text-success">Yes</span>';
+            
+            showMessage('Thumbnail set successfully!', 'success');
+        } else {
+            showMessage('Failed to set thumbnail', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Failed to set thumbnail: ' + error.message, 'error');
+    });
+}
+
+function deleteImage(imageId) {
+    if (!confirm('Are you sure you want to delete this image? This action cannot be undone.')) {
+        return;
+    }
+    
+    fetch(`/admin/listings/${listingId}/images/${imageId}/delete`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const imageItem = document.querySelector(`[data-image-id="${imageId}"]`);
+            imageItem.remove();
+            
+            updateImageCount();
+            
+            // Check if we need to show empty state
+            const remainingImages = document.querySelectorAll('.image-item');
+            if (remainingImages.length === 0) {
+                showEmptyState();
+            }
+            
+            showMessage('Image deleted successfully!', 'success');
+        } else {
+            showMessage('Failed to delete image', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Failed to delete image: ' + error.message, 'error');
+    });
+}
+
+function updateImageMetadata(imageId, field, value) {
+    const formData = new FormData();
+    formData.append(field, value);
+    
+    fetch(`/admin/listings/${listingId}/images/${imageId}/update`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            showMessage('Failed to update image metadata', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Failed to update image metadata: ' + error.message, 'error');
+    });
+}
+
+function migrateImages() {
+    if (!confirm('This will migrate images from the legacy format. Continue?')) {
+        return;
+    }
+    
+    showLoading();
+    
+    fetch('/admin/migrate-legacy-images', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(data.message, 'success');
+            // Reload page to show migrated images
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showMessage(data.error || 'Migration failed', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Migration failed: ' + error.message, 'error');
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+function updateImageCount() {
+    const count = document.querySelectorAll('.image-item').length;
+    document.getElementById('image-count').textContent = count;
+}
+
+function showEmptyState() {
+    const container = document.getElementById('images-container');
+    container.innerHTML = `
+        <div class="empty-state" id="empty-state">
+            <i class="fas fa-images fa-4x mb-3"></i>
+            <h4>No Images Yet</h4>
+            <p>Upload your first image to get started</p>
+        </div>
+    `;
+}
+
+function showLoading() {
+    document.getElementById('loading-overlay').style.display = 'block';
+}
+
+function hideLoading() {
+    document.getElementById('loading-overlay').style.display = 'none';
+}
+
+function showMessage(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 10000; min-width: 300px;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', alertHtml);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.remove();
+    }, 5000);
+}
+
+// Windows 10 Style Image Editor functionality
+let imageEditor;
+let currentEditingImageId;
+
+function editImage(imageId, imageUrl) {
+    currentEditingImageId = imageId;
+    showImageEditor(imageUrl);
+}
+
+function showImageEditor(imageUrl) {
+    const modal = document.getElementById('image-editor-modal');
+    modal.style.display = 'block';
+    
+    // Destroy existing editor if present
+    if (imageEditor) {
+        imageEditor.destroy();
+    }
+    
+    const editorElement = document.getElementById('imageEditor');
+    editorElement.innerHTML = '';
+    
+    // Initialize Pintura Image Editor with Windows 10 style
+    imageEditor = pintura.openDefaultEditor({
+        src: imageUrl,
+        imageCropAspectRatio: null,
+        imageWriter: {
+            quality: 0.9,
+            format: 'image/jpeg'
+        },
+        locale: {
+            labelButtonCancel: 'Cancel',
+            labelButtonDone: 'Apply',
+            labelTabCrop: 'Crop',
+            labelTabFilter: 'Filters',
+            labelTabFinetune: 'Adjust',
+            labelTabAnnotate: 'Draw',
+            labelTabDecorate: 'Text & Shapes'
+        },
+        utils: [
+            'crop',
+            'filter', 
+            'finetune',
+            'annotate',
+            'decorate'
+        ],
+        cropSelectPresetFilter: 'landscape',
+        cropSelectPresetOptions: [
+            [undefined, 'Custom'],
+            [1, 'Square'],
+            [4/3, '4:3'],
+            [16/9, '16:9'],
+            [3/2, '3:2']
+        ],
+        filterOptions: {
+            'clarity': { label: 'Clarity' },
+            'brightness': { label: 'Brightness' },
+            'contrast': { label: 'Contrast' },
+            'saturation': { label: 'Saturation' },
+            'exposure': { label: 'Exposure' },
+            'temperature': { label: 'Temperature' },
+            'gamma': { label: 'Gamma' },
+            'vibrance': { label: 'Vibrance' },
+            'hue': { label: 'Hue' }
+        },
+        finetuneOptions: [
+            ['brightness', 'Brightness'],
+            ['contrast', 'Contrast'], 
+            ['saturation', 'Saturation'],
+            ['exposure', 'Exposure'],
+            ['temperature', 'Temperature'],
+            ['gamma', 'Gamma'],
+            ['clarity', 'Clarity'],
+            ['vibrance', 'Vibrance'],
+            ['vignette', 'Vignette']
+        ],
+        annotateTools: [
+            'rectangle',
+            'ellipse', 
+            'arrow',
+            'line',
+            'text'
+        ]
+    });
+    
+    // Append to our container
+    editorElement.appendChild(imageEditor);
+    
+    // Style the editor to match Windows 10
+    setTimeout(() => {
+        const pinturaRoot = editorElement.querySelector('.pintura-editor');
+        if (pinturaRoot) {
+            pinturaRoot.style.borderRadius = '8px';
+            pinturaRoot.style.overflow = 'hidden';
+            pinturaRoot.style.fontFamily = "'Segoe UI', sans-serif";
+        }
+    }, 100);
+}
+
+function closeImageEditor() {
+    const modal = document.getElementById('image-editor-modal');
+    modal.style.display = 'none';
+    
+    if (imageEditor) {
+        imageEditor.destroy();
+        imageEditor = null;
+    }
+    
+    currentEditingImageId = null;
+}
+
+function saveEditedImage() {
+    if (!imageEditor || !currentEditingImageId) {
+        showMessage('No image to save', 'error');
+        return;
+    }
+    
+    showLoading();
+    
+    // Get the edited image from Pintura
+    imageEditor.processImage().then((result) => {
+        // Convert to base64 data URL
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const img = new Image();
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            const editedImageData = canvas.toDataURL('image/jpeg', 0.9);
+            
+            // Send to server
+            fetch(`/admin/listings/${listingId}/images/${currentEditingImageId}/edit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    edited_image: editedImageData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the image in the grid
+                    const imageItem = document.querySelector(`[data-image-id="${currentEditingImageId}"]`);
+                    if (imageItem) {
+                        const img = imageItem.querySelector('.image-preview');
+                        img.src = data.new_url + '?t=' + Date.now();
+                        
+                        // Add editing indicator
+                        let indicator = imageItem.querySelector('.editing-indicator');
+                        if (!indicator) {
+                            indicator = document.createElement('div');
+                            indicator.className = 'editing-indicator';
+                            indicator.innerHTML = 'EDITED';
+                            imageItem.appendChild(indicator);
+                        }
+                    }
+                    
+                    closeImageEditor();
+                    showMessage('Image edited successfully!', 'success');
+                } else {
+                    showMessage(data.error || 'Failed to save edited image', 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('Failed to save edited image: ' + error.message, 'error');
+            })
+            .finally(() => {
+                hideLoading();
+            });
+        };
+        
+        img.src = result.dest;
+    }).catch(error => {
+        hideLoading();
+        showMessage('Failed to process image: ' + error.message, 'error');
+    });
+}
+
+// Keyboard shortcuts for image editor
+document.addEventListener('keydown', function(e) {
+    if (document.getElementById('image-editor-modal').style.display === 'block') {
+        if (e.key === 'Escape') {
+            closeImageEditor();
+        } else if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            saveEditedImage();
+        }
+    }
+});
+</script>
+{% endblock %} 

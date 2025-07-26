@@ -62,10 +62,41 @@ class Listing(db.Model):
     
     # Additional fields
     description = db.Column(db.Text)
-    images = db.Column(db.Text)  # JSON string for image URLs
+    images = db.Column(db.Text)  # JSON string for image URLs (legacy - kept for migration)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def get_thumbnail_image(self):
+        """Get the designated thumbnail image or first image if no thumbnail is set"""
+        try:
+            if hasattr(self, 'listing_images') and self.listing_images:
+                thumbnail = next((img for img in self.listing_images if img.is_thumbnail), None)
+                if thumbnail:
+                    return thumbnail
+                return self.listing_images[0] if self.listing_images else None
+        except:
+            pass
+        return None
+    
+    def get_ordered_images(self):
+        """Get all images ordered by display_order"""
+        try:
+            if hasattr(self, 'listing_images') and self.listing_images:
+                return sorted(self.listing_images, key=lambda x: x.display_order)
+        except:
+            pass
+        return []
+    
+    def get_legacy_images(self):
+        """Get images from legacy JSON field for migration purposes"""
+        if self.images:
+            try:
+                import json
+                return json.loads(self.images)
+            except:
+                return []
+        return []
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -103,4 +134,19 @@ class AppraisalRequest(db.Model):
     status = db.Column(db.String(20), default='pending')  # pending, in_progress, completed
     admin_notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow) 
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class ListingImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    listing_id = db.Column(db.Integer, db.ForeignKey('listing.id'), nullable=False)
+    image_url = db.Column(db.String(500), nullable=False)
+    image_path = db.Column(db.String(500))  # Local file path
+    display_order = db.Column(db.Integer, default=0)
+    is_thumbnail = db.Column(db.Boolean, default=False)
+    alt_text = db.Column(db.String(255))
+    caption = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship back to listing
+    listing = db.relationship('Listing', backref=db.backref('listing_images', lazy=True, cascade='all, delete-orphan', order_by='ListingImage.display_order')) 

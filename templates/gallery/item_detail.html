@@ -276,6 +276,34 @@
                             </div>
                         </div>
                         
+                        <!-- Center Stone Carat Weight (for Engagement Rings only) -->
+                        {% if category_name == 'Engagement Ring' %}
+                        <div class="col-md-6">
+                            <div class="option-group">
+                                <label class="form-label">
+                                    <i class="fas fa-weight me-2"></i>Center Stone Carat Weight
+                                </label>
+                                <select class="form-select" name="center_carat_weight">
+                                    <option value="">Select Carat Weight</option>
+                                    <option value="0.50">0.50 ct</option>
+                                    <option value="0.75">0.75 ct</option>
+                                    <option value="1.00">1.00 ct</option>
+                                    <option value="1.25">1.25 ct</option>
+                                    <option value="1.50">1.50 ct</option>
+                                    <option value="1.75">1.75 ct</option>
+                                    <option value="2.00">2.00 ct</option>
+                                    <option value="2.50">2.50 ct</option>
+                                    <option value="3.00">3.00 ct</option>
+                                    <option value="3.50">3.50 ct</option>
+                                    <option value="4.00">4.00 ct</option>
+                                    <option value="5.00">5.00 ct</option>
+                                    <option value="custom">Custom Size</option>
+                                </select>
+                                <small class="form-text text-muted">Select your preferred center diamond size</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         <div class="col-md-6">
                             <div class="option-group">
                                 <label class="form-label">
@@ -472,6 +500,17 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.forEach((value, key) => {
             inquiryData[key] = value;
         });
+        
+        // Also capture customization form select values
+        const customizationForm = document.getElementById('customization-form');
+        if (customizationForm) {
+            const customizationFormData = new FormData(customizationForm);
+            customizationFormData.forEach((value, key) => {
+                if (value) { // Only include non-empty values
+                    customizations[key] = value;
+                }
+            });
+        }
         
         // Add item and customization data
         inquiryData.item_sku = '{{ item.sku }}';

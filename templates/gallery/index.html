@@ -59,8 +59,8 @@
     .hero-section {
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: white;
-        padding: 100px 0;
-        margin-bottom: 80px;
+        padding: 60px 0;
+        margin-bottom: 40px;
     }
     
     .stat-counter {
@@ -83,7 +83,7 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <img src="{{ url_for('static', filename='uploads/wmdlogo.jpg') }}" alt="Want My Diamond" 
-                     class="mb-4" style="max-width: 150px; height: auto;">
+                     class="mb-4" style="max-width: 200px; height: auto;">
                 <h1 class="display-4 mb-4">Fine Jewelry Gallery</h1>
                 <p class="lead mb-4">Discover our exquisite collection of handcrafted jewelry. Each piece is carefully curated and can be customized to your exact specifications.</p>
                 <p class="mb-4">
@@ -94,37 +94,7 @@
     </div>
 </section>
 
-<!-- Stats Section -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3">
-                <div class="stat-counter">
-                    <div class="stat-number" id="total-items">0</div>
-                    <h6>Jewelry Pieces</h6>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-counter">
-                    <div class="stat-number">{{ categories|length }}</div>
-                    <h6>Categories</h6>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-counter">
-                    <div class="stat-number">{{ photo_structure|length }}</div>
-                    <h6>Collections</h6>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-counter">
-                    <div class="stat-number">100%</div>
-                    <h6>Customizable</h6>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+
 
 <!-- Categories Section -->
 <section class="py-5">
@@ -218,17 +188,7 @@
 {% block extra_js %}
 <script>
 $(document).ready(function() {
-    // Simple counter animation for total items
-    var totalItems = 50; // This will be calculated dynamically later
-    
-    // Animate counter
-    $({ Counter: 0 }).animate({ Counter: totalItems }, {
-        duration: 2000,
-        easing: 'swing',
-        step: function () {
-            $('#total-items').text(Math.ceil(this.Counter));
-        }
-    });
+    // Gallery functionality can be added here
 });
 </script>
 {% endblock %} 

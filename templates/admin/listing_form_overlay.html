@@ -1,0 +1,633 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Listing' if listing else 'New Listing' }} - Admin Editor{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        padding-top: 0;
+    }
+    
+    .admin-overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 400px;
+        height: 100vh;
+        background: rgba(255, 255, 255, 0.98);
+        border-left: 3px solid #007bff;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+        z-index: 1050;
+        overflow-y: auto;
+        padding: 20px;
+    }
+    
+    .admin-controls {
+        position: sticky;
+        top: 0;
+        background: white;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 20px;
+    }
+    
+    .editable-field {
+        position: relative;
+        cursor: pointer;
+        border: 2px solid transparent;
+        padding: 5px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .editable-field:hover {
+        border-color: #007bff;
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .editable-field.editing {
+        border-color: #28a745;
+        background-color: rgba(40, 167, 69, 0.05);
+    }
+    
+    .edit-indicator {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #007bff;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .editable-field:hover .edit-indicator {
+        opacity: 1;
+    }
+    
+    .inline-edit-form {
+        display: none;
+        background: white;
+        border: 2px solid #28a745;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        position: absolute;
+        z-index: 1060;
+        min-width: 300px;
+    }
+    
+    .preview-mode .navbar {
+        position: relative;
+    }
+    
+    .product-gallery {
+        max-width: 500px;
+    }
+    
+    .main-image {
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        max-height: 300px;
+    }
+    
+    .main-image img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .main-image img:hover {
+        border-color: #007bff;
+        cursor: pointer;
+        transform: scale(1.02);
+    }
+    
+    .thumbnail-gallery {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        max-width: 100%;
+    }
+    
+    .thumbnail {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color 0.3s ease;
+        flex-shrink: 0;
+    }
+    
+    .thumbnail.active {
+        border-color: var(--primary-color);
+    }
+    
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .placeholder-image {
+        height: 250px !important;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+    }
+    
+    .form-control, .form-select {
+        font-size: 14px;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .price-editing {
+        background: #fff3cd;
+        border: 2px solid #856404;
+        padding: 10px;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Admin Control Panel -->
+<div class="admin-overlay">
+    <div class="admin-controls">
+        <h5><i class="fas fa-edit me-2"></i>{{ 'Edit Listing' if listing else 'New Listing' }}</h5>
+        <div class="d-flex gap-2 mt-3">
+            <button type="button" class="btn btn-success btn-sm" onclick="saveAllChanges()">
+                <i class="fas fa-save me-1"></i>Save
+            </button>
+            <a href="{{ url_for('admin.listings') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Back
+            </a>
+            <button type="button" class="btn btn-info btn-sm" onclick="togglePreviewMode()">
+                <i class="fas fa-eye me-1"></i>Preview
+            </button>
+        </div>
+    </div>
+    
+    <!-- Quick Edit Form -->
+    <form id="main-edit-form" method="POST">
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" name="title" value="{{ listing.title if listing else '' }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">SKU</label>
+            <input type="text" class="form-control" name="sku" value="{{ listing.sku if listing else '' }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select" name="category" required>
+                <option value="">Select Category</option>
+                <option value="Engagement Ring" {{ 'selected' if listing and listing.category == 'Engagement Ring' else '' }}>Engagement Ring</option>
+                <option value="Bridal Set" {{ 'selected' if listing and listing.category == 'Bridal Set' else '' }}>Bridal Set</option>
+                <option value="Earrings" {{ 'selected' if listing and listing.category == 'Earrings' else '' }}>Earrings</option>
+                <option value="Bracelets" {{ 'selected' if listing and listing.category == 'Bracelets' else '' }}>Bracelets</option>
+                <option value="Eternity Bands" {{ 'selected' if listing and listing.category == 'Eternity Bands' else '' }}>Eternity Bands</option>
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Center Shape</label>
+            <select class="form-select" name="center_shape">
+                <option value="">Select Shape</option>
+                <option value="Round" {{ 'selected' if listing and listing.center_shape == 'Round' else '' }}>Round</option>
+                <option value="Princess" {{ 'selected' if listing and listing.center_shape == 'Princess' else '' }}>Princess</option>
+                <option value="Cushion" {{ 'selected' if listing and listing.center_shape == 'Cushion' else '' }}>Cushion</option>
+                <option value="Oval" {{ 'selected' if listing and listing.center_shape == 'Oval' else '' }}>Oval</option>
+                <option value="Emerald" {{ 'selected' if listing and listing.center_shape == 'Emerald' else '' }}>Emerald</option>
+                <option value="Radiant" {{ 'selected' if listing and listing.center_shape == 'Radiant' else '' }}>Radiant</option>
+            </select>
+        </div>
+        
+        <div class="row">
+            <div class="col-6 mb-3">
+                <label class="form-label">Retail Value</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" name="retail_value" 
+                           value="{{ listing.retail_value if listing else '' }}" step="0.01" required>
+                </div>
+            </div>
+            <div class="col-6 mb-3">
+                <label class="form-label">Sale Price</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" name="sale_price" 
+                           value="{{ listing.sale_price if listing else '' }}" step="0.01" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="4">{{ listing.description if listing else '' }}</textarea>
+        </div>
+        
+        <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="is_active" 
+                       {{ 'checked' if listing and listing.is_active else 'checked' if not listing else '' }}>
+                <label class="form-check-label">Active Listing</label>
+            </div>
+        </div>
+        
+        {% if listing %}
+        <div class="mb-3">
+            <a href="{{ url_for('admin.manage_images', listing_id=listing.id) }}" 
+               class="btn btn-info btn-sm w-100">
+                <i class="fas fa-images me-1"></i>Manage Images
+            </a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Main Content - Simulated Item Detail View -->
+<div class="container-fluid" style="margin-right: 420px;">
+    <div class="row mt-4">
+        <!-- Product Gallery -->
+        <div class="col-md-6">
+            <div class="product-gallery">
+                <div class="main-image">
+                    {% if listing and listing.get_thumbnail_image() %}
+                    <img src="{{ listing.get_thumbnail_image().image_url }}" alt="{{ listing.title }}" 
+                         class="editable-field" onclick="editImages()">
+                    {% else %}
+                    <div class="placeholder-image editable-field" onclick="editImages()">
+                        <div class="text-center">
+                            <i class="fas fa-camera fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">Click to add images</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="edit-indicator"><i class="fas fa-edit"></i></div>
+                </div>
+                
+                {% if listing and listing.get_ordered_images() %}
+                <div class="thumbnail-gallery mt-3">
+                    {% for image in listing.get_ordered_images()[:5] %}
+                    <div class="thumbnail">
+                        <img src="{{ image.image_url }}" alt="Thumbnail" onclick="editImages()">
+                    </div>
+                    {% endfor %}
+                    {% if listing.get_ordered_images()|length > 5 %}
+                    <div class="thumbnail d-flex align-items-center justify-content-center bg-light">
+                        <small>+{{ listing.get_ordered_images()|length - 5 }} more</small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Product Information -->
+        <div class="col-md-6">
+            <div class="product-info">
+                <h1 class="editable-field" onclick="editField('title')">
+                    {{ listing.title if listing else 'New Jewelry Item' }}
+                    <div class="edit-indicator"><i class="fas fa-edit"></i></div>
+                </h1>
+                
+                <div class="price-section mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <h3 class="text-primary mb-0 editable-field" onclick="editField('sale_price')">
+                            ${{ "{:,.2f}".format(listing.sale_price) if listing and listing.sale_price else "0.00" }}
+                            <div class="edit-indicator"><i class="fas fa-edit"></i></div>
+                        </h3>
+                        {% if listing and listing.retail_value and listing.retail_value > listing.sale_price %}
+                        <span class="text-muted text-decoration-line-through editable-field" onclick="editField('retail_value')">
+                            ${{ "{:,.2f}".format(listing.retail_value) }}
+                            <div class="edit-indicator"><i class="fas fa-edit"></i></div>
+                        </span>
+                        <span class="badge bg-success">
+                            {{ "{:.0f}%".format(((listing.retail_value - listing.sale_price) / listing.retail_value) * 100) }} OFF
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="product-details mb-4">
+                    <h5>Product Details</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>SKU:</strong> 
+                            <span class="editable-field" onclick="editField('sku')">
+                                {{ listing.sku if listing else 'Not set' }}
+                                <div class="edit-indicator"><i class="fas fa-edit"></i></div>
+                            </span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Category:</strong> 
+                            <span class="editable-field" onclick="editField('category')">
+                                {{ listing.category if listing else 'Not set' }}
+                                <div class="edit-indicator"><i class="fas fa-edit"></i></div>
+                            </span>
+                        </div>
+                        {% if listing and listing.center_shape %}
+                        <div class="col-6 mt-2">
+                            <strong>Shape:</strong> 
+                            <span class="editable-field" onclick="editField('center_shape')">
+                                {{ listing.center_shape }}
+                                <div class="edit-indicator"><i class="fas fa-edit"></i></div>
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="product-description mb-4">
+                    <h5>Description</h5>
+                    <div class="editable-field" onclick="editField('description')" style="min-height: 100px;">
+                        {{ listing.description if listing and listing.description else 'Click to add description...' }}
+                        <div class="edit-indicator"><i class="fas fa-edit"></i></div>
+                    </div>
+                </div>
+                
+                <!-- Status Indicator -->
+                <div class="status-section">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="status-toggle" 
+                               {{ 'checked' if listing and listing.is_active else 'checked' if not listing else '' }}
+                               onchange="toggleStatus()">
+                        <label class="form-check-label" for="status-toggle">
+                            <strong id="status-text">{{ 'Active' if listing and listing.is_active else 'Active' if not listing else 'Inactive' }}</strong>
+                            <br><small class="text-muted">Visible on website</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inline Edit Forms (Hidden by default) -->
+<div id="inline-edit-forms" style="display: none;">
+    <!-- Title Edit Form -->
+    <div id="edit-form-title" class="inline-edit-form">
+        <h6>Edit Title</h6>
+        <input type="text" class="form-control mb-2" id="edit-title-input">
+        <div class="d-flex gap-2">
+            <button class="btn btn-success btn-sm" onclick="saveInlineEdit('title')">Save</button>
+            <button class="btn btn-secondary btn-sm" onclick="cancelInlineEdit()">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Other edit forms... -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentEditField = null;
+let previewMode = false;
+
+function editField(fieldName) {
+    if (previewMode) return;
+    
+    currentEditField = fieldName;
+    const element = event.target.closest('.editable-field');
+    const rect = element.getBoundingClientRect();
+    
+    // Get current value from form
+    const formElement = document.querySelector(`[name="${fieldName}"]`);
+    const currentValue = formElement ? formElement.value : '';
+    
+    // Create inline edit form
+    const editForm = document.createElement('div');
+    editForm.className = 'inline-edit-form';
+    editForm.style.display = 'block';
+    editForm.style.position = 'fixed';
+    editForm.style.top = rect.top + 'px';
+    editForm.style.left = Math.min(rect.left, window.innerWidth - 320) + 'px';
+    
+    let inputElement;
+    if (fieldName === 'description') {
+        inputElement = `<textarea class="form-control mb-2" rows="4">${currentValue}</textarea>`;
+    } else if (fieldName === 'category') {
+        inputElement = `
+            <select class="form-select mb-2">
+                <option value="">Select Category</option>
+                <option value="Engagement Ring" ${currentValue === 'Engagement Ring' ? 'selected' : ''}>Engagement Ring</option>
+                <option value="Bridal Set" ${currentValue === 'Bridal Set' ? 'selected' : ''}>Bridal Set</option>
+                <option value="Earrings" ${currentValue === 'Earrings' ? 'selected' : ''}>Earrings</option>
+                <option value="Bracelets" ${currentValue === 'Bracelets' ? 'selected' : ''}>Bracelets</option>
+                <option value="Eternity Bands" ${currentValue === 'Eternity Bands' ? 'selected' : ''}>Eternity Bands</option>
+            </select>`;
+    } else if (fieldName === 'center_shape') {
+        inputElement = `
+            <select class="form-select mb-2">
+                <option value="">Select Shape</option>
+                <option value="Round" ${currentValue === 'Round' ? 'selected' : ''}>Round</option>
+                <option value="Princess" ${currentValue === 'Princess' ? 'selected' : ''}>Princess</option>
+                <option value="Cushion" ${currentValue === 'Cushion' ? 'selected' : ''}>Cushion</option>
+                <option value="Oval" ${currentValue === 'Oval' ? 'selected' : ''}>Oval</option>
+                <option value="Emerald" ${currentValue === 'Emerald' ? 'selected' : ''}>Emerald</option>
+                <option value="Radiant" ${currentValue === 'Radiant' ? 'selected' : ''}>Radiant</option>
+            </select>`;
+    } else {
+        const inputType = fieldName.includes('price') || fieldName.includes('value') ? 'number' : 'text';
+        const step = fieldName.includes('price') || fieldName.includes('value') ? 'step="0.01"' : '';
+        inputElement = `<input type="${inputType}" class="form-control mb-2" value="${currentValue}" ${step}>`;
+    }
+    
+    editForm.innerHTML = `
+        <h6>Edit ${fieldName.replace('_', ' ').toUpperCase()}</h6>
+        ${inputElement}
+        <div class="d-flex gap-2">
+            <button class="btn btn-success btn-sm" onclick="saveInlineEdit('${fieldName}')">Save</button>
+            <button class="btn btn-secondary btn-sm" onclick="cancelInlineEdit()">Cancel</button>
+        </div>
+    `;
+    
+    // Remove existing edit forms
+    document.querySelectorAll('.inline-edit-form').forEach(form => {
+        if (form.style.position === 'fixed') form.remove();
+    });
+    
+    document.body.appendChild(editForm);
+    
+    // Focus the input
+    const input = editForm.querySelector('input, textarea, select');
+    input.focus();
+    if (input.type === 'text' || input.type === 'number') {
+        input.select();
+    }
+}
+
+function saveInlineEdit(fieldName) {
+    const editForm = document.querySelector('.inline-edit-form[style*="position: fixed"]');
+    const input = editForm.querySelector('input, textarea, select');
+    const newValue = input.value;
+    
+    // Update form
+    const formElement = document.querySelector(`[name="${fieldName}"]`);
+    if (formElement) {
+        formElement.value = newValue;
+    }
+    
+    // Update display
+    updateDisplay(fieldName, newValue);
+    
+    // Remove edit form
+    editForm.remove();
+    
+    // Auto-save
+    debounceAutoSave();
+}
+
+function cancelInlineEdit() {
+    document.querySelectorAll('.inline-edit-form').forEach(form => {
+        if (form.style.position === 'fixed') form.remove();
+    });
+}
+
+function updateDisplay(fieldName, value) {
+    const element = document.querySelector(`.editable-field[onclick*="${fieldName}"]`);
+    if (element) {
+        if (fieldName === 'sale_price') {
+            element.innerHTML = `$${parseFloat(value || 0).toLocaleString('en-US', {minimumFractionDigits: 2})} <div class="edit-indicator"><i class="fas fa-edit"></i></div>`;
+        } else if (fieldName === 'retail_value') {
+            element.innerHTML = `$${parseFloat(value || 0).toLocaleString('en-US', {minimumFractionDigits: 2})} <div class="edit-indicator"><i class="fas fa-edit"></i></div>`;
+        } else {
+            element.innerHTML = `${value || 'Click to add...'} <div class="edit-indicator"><i class="fas fa-edit"></i></div>`;
+        }
+    }
+}
+
+function editImages() {
+    if (previewMode) return;
+    {% if listing %}
+    window.open('{{ url_for("admin.manage_images", listing_id=listing.id) }}', '_blank');
+    {% else %}
+    alert('Please save the listing first before adding images.');
+    {% endif %}
+}
+
+function toggleStatus() {
+    const checkbox = document.getElementById('status-toggle');
+    const text = document.getElementById('status-text');
+    const formCheckbox = document.querySelector('[name="is_active"]');
+    
+    formCheckbox.checked = checkbox.checked;
+    text.textContent = checkbox.checked ? 'Active' : 'Inactive';
+    
+    debounceAutoSave();
+}
+
+function togglePreviewMode() {
+    previewMode = !previewMode;
+    const adminOverlay = document.querySelector('.admin-overlay');
+    const editIndicators = document.querySelectorAll('.edit-indicator');
+    const editableFields = document.querySelectorAll('.editable-field');
+    
+    if (previewMode) {
+        adminOverlay.style.display = 'none';
+        editIndicators.forEach(indicator => indicator.style.display = 'none');
+        editableFields.forEach(field => {
+            field.style.cursor = 'default';
+            field.onclick = null;
+        });
+        document.querySelector('.btn-info span').textContent = 'Edit Mode';
+    } else {
+        adminOverlay.style.display = 'block';
+        editIndicators.forEach(indicator => indicator.style.display = 'flex');
+        editableFields.forEach(field => {
+            field.style.cursor = 'pointer';
+        });
+        document.querySelector('.btn-info span').textContent = 'Preview';
+    }
+}
+
+let autoSaveTimeout;
+function debounceAutoSave() {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+        // Optional: Auto-save functionality
+        console.log('Auto-saving...');
+    }, 2000);
+}
+
+function saveAllChanges() {
+    const form = document.getElementById('main-edit-form');
+    const formData = new FormData(form);
+    
+    // Show loading
+    const saveBtn = document.querySelector('.btn-success');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+    saveBtn.disabled = true;
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.text();
+        }
+        throw new Error('Save failed');
+    })
+    .then(data => {
+        // Success
+        saveBtn.innerHTML = '<i class="fas fa-check me-1"></i>Saved!';
+        setTimeout(() => {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }, 2000);
+        
+        // If this was a new listing, redirect to edit mode
+        if (window.location.pathname.includes('/new')) {
+            // Extract listing ID from response if needed
+            // window.location.href = `/admin/listings/${listingId}/edit-overlay`;
+        }
+    })
+    .catch(error => {
+        console.error('Save error:', error);
+        saveBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error';
+        saveBtn.disabled = false;
+        setTimeout(() => {
+            saveBtn.innerHTML = originalText;
+        }, 3000);
+    });
+}
+
+// Handle clicks outside edit forms
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.inline-edit-form') && !event.target.closest('.editable-field')) {
+        cancelInlineEdit();
+    }
+});
+
+// Handle escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        cancelInlineEdit();
+    }
+});
+</script>
+{% endblock %} 

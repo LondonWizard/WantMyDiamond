@@ -128,11 +128,21 @@ def get_photo_structure():
         if shape not in structure[category]:
             structure[category][shape] = []
             
-        # Get images from listing
+        # Get images from new image system, fallback to legacy
         images = []
-        if listing.images:
+        thumbnail = None
+        
+        if listing.listing_images:
+            # Use new image management system
+            ordered_images = listing.get_ordered_images()
+            images = [img.image_url for img in ordered_images]
+            thumbnail_img = listing.get_thumbnail_image()
+            thumbnail = thumbnail_img.image_url if thumbnail_img else None
+        elif listing.images:
+            # Fallback to legacy JSON system
             try:
                 images = json.loads(listing.images)
+                thumbnail = images[0] if images else None
             except:
                 images = []
         
@@ -141,7 +151,7 @@ def get_photo_structure():
             'sku': sku,
             'title': listing.title,
             'images': images,
-            'thumbnail': images[0] if images else None,
+            'thumbnail': thumbnail,
             'listing_id': listing.id,
             'description': listing.description or '',
             'retail_value': listing.retail_value,
@@ -195,11 +205,21 @@ def item_detail(category_name, shape, sku):
     if not listing:
         return render_template('404.html'), 404
     
-    # Get images from listing
+    # Get images from new image system, fallback to legacy
     images = []
-    if listing.images:
+    thumbnail = None
+    
+    if listing.listing_images:
+        # Use new image management system
+        ordered_images = listing.get_ordered_images()
+        images = [img.image_url for img in ordered_images]
+        thumbnail_img = listing.get_thumbnail_image()
+        thumbnail = thumbnail_img.image_url if thumbnail_img else None
+    elif listing.images:
+        # Fallback to legacy JSON system
         try:
             images = json.loads(listing.images)
+            thumbnail = images[0] if images else None
         except:
             images = []
     
@@ -208,7 +228,7 @@ def item_detail(category_name, shape, sku):
         'sku': listing.sku,
         'title': listing.title,
         'images': images,
-        'thumbnail': images[0] if images else None,
+        'thumbnail': thumbnail,
         'listing_id': listing.id,
         'description': listing.description or '',
         'retail_value': listing.retail_value,

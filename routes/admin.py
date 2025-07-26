@@ -2,10 +2,14 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
-from models import db, User, Listing, Contact, Message, CustomRequest, AppraisalRequest
+from models import db, User, Listing, Contact, Message, CustomRequest, AppraisalRequest, ListingImage
 import json
 import os
+import base64
+import uuid
 from datetime import datetime
+from PIL import Image
+import io
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -154,6 +158,156 @@ def new_listing():
                          listing=None, 
                          gallery_categories=JEWELRY_CATEGORIES,
                          diamond_shapes=DIAMOND_SHAPES)
+
+@admin_bp.route('/listings/<int:listing_id>/edit-overlay', methods=['GET', 'POST'])
+@login_required
+def edit_listing_overlay(listing_id):
+    """Enhanced listing editor with website overlay view"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    if request.method == 'POST':
+        try:
+            # Update basic fields
+            listing.title = request.form.get('title')
+            listing.sku = request.form.get('sku')
+            listing.category = request.form.get('category')
+            listing.center_shape = request.form.get('center_shape')
+            listing.retail_value = float(request.form.get('retail_value', 0))
+            listing.sale_price = float(request.form.get('sale_price', 0))
+            listing.description = request.form.get('description')
+            listing.is_active = bool(request.form.get('is_active'))
+            
+            db.session.commit()
+            flash('Listing updated successfully!', 'success')
+            
+            # Return JSON response for AJAX
+            if request.headers.get('Content-Type') == 'application/json':
+                return jsonify({'success': True, 'message': 'Listing updated successfully!'})
+            
+            return redirect(url_for('admin.edit_listing_overlay', listing_id=listing_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating listing: {str(e)}', 'error')
+            
+            if request.headers.get('Content-Type') == 'application/json':
+                return jsonify({'success': False, 'error': str(e)}), 400
+    
+    return render_template('admin/listing_form_overlay.html', listing=listing)
+
+@admin_bp.route('/listings/new-overlay', methods=['GET', 'POST'])
+@login_required
+def new_listing_overlay():
+    """Create new listing with overlay editor"""
+    if request.method == 'POST':
+        try:
+            listing = Listing(
+                title=request.form.get('title'),
+                sku=request.form.get('sku'),
+                category=request.form.get('category'),
+                center_shape=request.form.get('center_shape'),
+                retail_value=float(request.form.get('retail_value', 0)),
+                sale_price=float(request.form.get('sale_price', 0)),
+                description=request.form.get('description'),
+                is_active=bool(request.form.get('is_active'))
+            )
+            
+            db.session.add(listing)
+            db.session.commit()
+            
+            flash('Listing created successfully!', 'success')
+            return redirect(url_for('admin.edit_listing_overlay', listing_id=listing.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating listing: {str(e)}', 'error')
+    
+    return render_template('admin/listing_form_overlay.html', listing=None)
+
+@admin_bp.route('/listings/<int:listing_id>/edit-split', methods=['GET', 'POST'])
+@login_required
+def edit_listing_split(listing_id):
+    """Split-screen listing editor with live preview"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    if request.method == 'POST':
+        try:
+            # Update all fields
+            listing.title = request.form.get('title')
+            listing.sku = request.form.get('sku')
+            listing.category = request.form.get('category')
+            listing.center_shape = request.form.get('center_shape')
+            listing.retail_value = float(request.form.get('retail_value', 0))
+            listing.sale_price = float(request.form.get('sale_price', 0))
+            listing.description = request.form.get('description')
+            listing.is_active = bool(request.form.get('is_active'))
+            
+            # Stone details
+            listing.center_stone = request.form.get('center_stone')
+            listing.center_carat_weight = float(request.form.get('center_carat_weight', 0)) if request.form.get('center_carat_weight') else None
+            listing.center_color = request.form.get('center_color')
+            listing.center_clarity = request.form.get('center_clarity')
+            listing.center_certification = request.form.get('center_certification')
+            
+            # Setting details
+            listing.metal = request.form.get('metal')
+            listing.ring_size = request.form.get('ring_size')
+            listing.total_carat_weight = float(request.form.get('total_carat_weight', 0)) if request.form.get('total_carat_weight') else None
+            listing.setting_retail_value = float(request.form.get('setting_retail_value', 0)) if request.form.get('setting_retail_value') else None
+            
+            listing.updated_at = datetime.utcnow()
+            db.session.commit()
+            
+            flash('Listing updated successfully!', 'success')
+            return redirect(url_for('admin.edit_listing_split', listing_id=listing_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating listing: {str(e)}', 'error')
+    
+    return render_template('admin/listing_form_split.html', listing=listing)
+
+@admin_bp.route('/listings/new-split', methods=['GET', 'POST'])
+@login_required
+def new_listing_split():
+    """Create new listing with split-screen editor"""
+    if request.method == 'POST':
+        try:
+            listing = Listing(
+                title=request.form.get('title'),
+                sku=request.form.get('sku'),
+                category=request.form.get('category'),
+                center_shape=request.form.get('center_shape'),
+                retail_value=float(request.form.get('retail_value', 0)),
+                sale_price=float(request.form.get('sale_price', 0)),
+                description=request.form.get('description'),
+                is_active=bool(request.form.get('is_active')),
+                
+                # Stone details
+                center_stone=request.form.get('center_stone'),
+                center_carat_weight=float(request.form.get('center_carat_weight', 0)) if request.form.get('center_carat_weight') else None,
+                center_color=request.form.get('center_color'),
+                center_clarity=request.form.get('center_clarity'),
+                center_certification=request.form.get('center_certification'),
+                
+                # Setting details
+                metal=request.form.get('metal'),
+                ring_size=request.form.get('ring_size'),
+                total_carat_weight=float(request.form.get('total_carat_weight', 0)) if request.form.get('total_carat_weight') else None,
+                setting_retail_value=float(request.form.get('setting_retail_value', 0)) if request.form.get('setting_retail_value') else None
+            )
+            
+            db.session.add(listing)
+            db.session.commit()
+            
+            flash('Listing created successfully!', 'success')
+            return redirect(url_for('admin.edit_listing_split', listing_id=listing.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating listing: {str(e)}', 'error')
+    
+    return render_template('admin/listing_form_split.html', listing=None)
 
 @admin_bp.route('/listings/<int:listing_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -474,4 +628,285 @@ def update_appraisal_request(request_id):
     db.session.commit()
     flash('Appraisal request updated successfully!')
     
-    return redirect(url_for('admin.view_appraisal_request', request_id=request_id)) 
+    return redirect(url_for('admin.view_appraisal_request', request_id=request_id))
+
+# Image management routes
+@admin_bp.route('/listings/<int:listing_id>/images')
+@login_required
+def manage_images(listing_id):
+    """Manage images for a specific listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    return render_template('admin/manage_images.html', listing=listing)
+
+@admin_bp.route('/listings/<int:listing_id>/images/add', methods=['POST'])
+@login_required
+def add_image(listing_id):
+    """Add a new image to a listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image file provided'}), 400
+    
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    if file and file.filename:
+        # Create gallery directory structure
+        gallery_path = os.path.join('static/WMD_Photos_NoVideos', listing.category, listing.center_shape, listing.sku)
+        os.makedirs(gallery_path, exist_ok=True)
+        
+        # Generate unique filename
+        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S_%f')
+        file_ext = os.path.splitext(secure_filename(file.filename))[1].lower()
+        filename = f"{timestamp}{file_ext}"
+        
+        # Save file
+        file_path = os.path.join(gallery_path, filename)
+        file.save(file_path)
+        
+        # Create image record
+        relative_url = f"/static/WMD_Photos_NoVideos/{listing.category}/{listing.center_shape}/{listing.sku}/{filename}"
+        
+        # Get next order number
+        max_order = db.session.query(db.func.max(ListingImage.display_order)).filter_by(listing_id=listing_id).scalar() or 0
+        
+        image = ListingImage(
+            listing_id=listing_id,
+            image_url=relative_url,
+            image_path=file_path,
+            display_order=max_order + 1,
+            alt_text=request.form.get('alt_text', ''),
+            caption=request.form.get('caption', '')
+        )
+        
+        db.session.add(image)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'image': {
+                'id': image.id,
+                'url': image.image_url,
+                'alt_text': image.alt_text,
+                'caption': image.caption,
+                'display_order': image.display_order,
+                'is_thumbnail': image.is_thumbnail
+            }
+        })
+    
+    return jsonify({'error': 'Invalid file'}), 400
+
+@admin_bp.route('/listings/<int:listing_id>/images/<int:image_id>/delete', methods=['DELETE'])
+@login_required
+def delete_image(listing_id, image_id):
+    """Delete an image from a listing"""
+    image = ListingImage.query.filter_by(id=image_id, listing_id=listing_id).first_or_404()
+    
+    # Delete physical file if it exists
+    if image.image_path and os.path.exists(image.image_path):
+        try:
+            os.remove(image.image_path)
+        except:
+            pass  # Continue even if file deletion fails
+    
+    db.session.delete(image)
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@admin_bp.route('/listings/<int:listing_id>/images/reorder', methods=['POST'])
+@login_required
+def reorder_images(listing_id):
+    """Reorder images for a listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    image_ids = request.json.get('image_ids', [])
+    
+    for index, image_id in enumerate(image_ids):
+        image = ListingImage.query.filter_by(id=image_id, listing_id=listing_id).first()
+        if image:
+            image.display_order = index
+    
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@admin_bp.route('/listings/<int:listing_id>/images/<int:image_id>/set-thumbnail', methods=['POST'])
+@login_required
+def set_thumbnail(listing_id, image_id):
+    """Set an image as the thumbnail for a listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    # Remove thumbnail flag from all images for this listing
+    ListingImage.query.filter_by(listing_id=listing_id).update({'is_thumbnail': False})
+    
+    # Set the selected image as thumbnail
+    image = ListingImage.query.filter_by(id=image_id, listing_id=listing_id).first_or_404()
+    image.is_thumbnail = True
+    
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@admin_bp.route('/listings/<int:listing_id>/images/<int:image_id>/update', methods=['POST'])
+@login_required
+def update_image(listing_id, image_id):
+    """Update image metadata"""
+    image = ListingImage.query.filter_by(id=image_id, listing_id=listing_id).first_or_404()
+    
+    image.alt_text = request.form.get('alt_text', '')
+    image.caption = request.form.get('caption', '')
+    image.updated_at = datetime.utcnow()
+    
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@admin_bp.route('/migrate-legacy-images', methods=['POST'])
+@login_required
+def migrate_legacy_images():
+    """Migrate images from legacy JSON format to new ListingImage model"""
+    migrated_count = 0
+    error_count = 0
+    
+    listings = Listing.query.filter(Listing.images.isnot(None)).all()
+    
+    for listing in listings:
+        if listing.listing_images:
+            continue  # Skip if already has new format images
+            
+        legacy_images = listing.get_legacy_images()
+        if legacy_images:
+            for index, image_url in enumerate(legacy_images):
+                try:
+                    # Create new ListingImage record
+                    listing_image = ListingImage(
+                        listing_id=listing.id,
+                        image_url=image_url,
+                        display_order=index,
+                        is_thumbnail=(index == 0),  # First image is thumbnail
+                        alt_text=f"{listing.title} - Image {index + 1}"
+                    )
+                    
+                    db.session.add(listing_image)
+                    migrated_count += 1
+                except Exception as e:
+                    error_count += 1
+                    continue
+    
+    try:
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'migrated': migrated_count,
+            'errors': error_count,
+            'message': f'Successfully migrated {migrated_count} images with {error_count} errors'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Migration failed: {str(e)}'}), 500
+
+@admin_bp.route('/listings/<int:listing_id>/images/<int:image_id>/edit', methods=['POST'])
+@login_required
+def edit_image(listing_id, image_id):
+    """Save an edited image"""
+    image = ListingImage.query.filter_by(id=image_id, listing_id=listing_id).first_or_404()
+    
+    data = request.get_json()
+    if not data or 'edited_image' not in data:
+        return jsonify({'error': 'No edited image data provided'}), 400
+    
+    try:
+        # Parse the base64 image data
+        image_data = data['edited_image']
+        if image_data.startswith('data:image'):
+            # Remove the data URL prefix
+            image_data = image_data.split(',')[1]
+        
+        # Decode base64 image
+        image_bytes = base64.b64decode(image_data)
+        
+        # Open and process the image with PIL
+        pil_image = Image.open(io.BytesIO(image_bytes))
+        
+        # Convert to RGB if necessary (for JPEG compatibility)
+        if pil_image.mode in ('RGBA', 'LA', 'P'):
+            pil_image = pil_image.convert('RGB')
+        
+        # Generate unique filename for edited version
+        listing = Listing.query.get_or_404(listing_id)
+        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        unique_id = str(uuid.uuid4())[:8]
+        filename = f"edited_{timestamp}_{unique_id}.jpg"
+        
+        # Create directory structure
+        gallery_path = os.path.join('static/WMD_Photos_NoVideos', listing.category, listing.center_shape, listing.sku)
+        os.makedirs(gallery_path, exist_ok=True)
+        
+        # Save the edited image
+        file_path = os.path.join(gallery_path, filename)
+        pil_image.save(file_path, 'JPEG', quality=90, optimize=True)
+        
+        # Create new URL
+        new_url = f"/static/WMD_Photos_NoVideos/{listing.category}/{listing.center_shape}/{listing.sku}/{filename}"
+        
+        # Update the image record with the new URL
+        # Keep original for potential rollback, update current URL
+        image.image_url = new_url
+        image.image_path = file_path
+        image.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'new_url': new_url,
+            'message': 'Image edited and saved successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to process edited image: {str(e)}'}), 500
+
+@admin_bp.route('/listings/<int:listing_id>/images/<int:image_id>/versions', methods=['GET'])
+@login_required
+def get_image_versions(listing_id, image_id):
+    """Get all versions of an image"""
+    image = ListingImage.query.filter_by(id=image_id, listing_id=listing_id).first_or_404()
+    
+    # For now, return the current version
+    # In future, could track version history
+    versions = [{
+        'id': 'current',
+        'url': image.image_url,
+        'created_at': image.updated_at.isoformat(),
+        'is_current': True
+    }]
+    
+    return jsonify({
+        'success': True,
+        'versions': versions
+    })
+
+@admin_bp.route('/listings/<int:listing_id>/images/<int:image_id>/restore', methods=['POST'])
+@login_required
+def restore_image_version(listing_id, image_id):
+    """Restore a previous version of an image"""
+    # Placeholder for future version restoration functionality
+    return jsonify({
+        'success': False,
+        'message': 'Version restoration not yet implemented'
+    })
+
+@admin_bp.route('/listings/<int:listing_id>/images/<int:image_id>/editor')
+@login_required
+def image_editor(listing_id, image_id):
+    """Windows 10 style image editor"""
+    listing = Listing.query.get_or_404(listing_id)
+    image = ListingImage.query.filter_by(id=image_id, listing_id=listing_id).first_or_404()
+    
+    return render_template('admin/win10_image_editor.html', 
+                         listing=listing, 
+                         image_id=image_id, 
+                         image_url=image.image_url) 
