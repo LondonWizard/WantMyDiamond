@@ -108,60 +108,6 @@
     </div>
 </section>
 
-<!-- Featured Listings -->
-{% if featured_listings %}
-<section class="py-5 bg-light">
-    <div class="container">
-        <h2 class="section-title">Featured Jewelry</h2>
-        <div class="row">
-            {% for listing in featured_listings %}
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card h-100">
-                    {% if listing.images %}
-                        {% set images = listing.images | from_json %}
-                        {% if images %}
-                        <img src="{{ images[0] }}" class="card-img-top product-image" alt="{{ listing.title }}">
-                        {% else %}
-                        <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                             class="card-img-top product-image" alt="{{ listing.title }}">
-                        {% endif %}
-                    {% else %}
-                    <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                         class="card-img-top product-image" alt="{{ listing.title }}">
-                    {% endif %}
-                    
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">{{ listing.title }}</h5>
-                        <p class="card-text flex-grow-1">
-                            <small class="text-muted">SKU: {{ listing.sku }}</small><br>
-                            {{ listing.description[:100] }}{% if listing.description|length > 100 %}...{% endif %}
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mt-auto">
-                            <div>
-                                {% if listing.retail_value != listing.sale_price %}
-                                <small class="text-muted text-decoration-line-through">${{ "%.2f"|format(listing.retail_value) }}</small><br>
-                                {% endif %}
-                                <span class="price">${{ "%.2f"|format(listing.sale_price) }}</span>
-                            </div>
-                            <a href="{{ url_for('main.listing_detail', listing_id=listing.id) }}" class="btn btn-primary">
-                                View Details
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <div class="text-center mt-4">
-            <a href="{{ url_for('gallery.index') }}" class="btn btn-lg btn-outline-primary">
-                View All Jewelry <i class="fas fa-arrow-right ms-2"></i>
-            </a>
-        </div>
-    </div>
-</section>
-{% endif %}
-
 <!-- Why Choose Us -->
 <section class="py-5">
     <div class="container">
@@ -199,29 +145,29 @@
             <div class="col-md-6">
                 <div class="d-flex mb-4">
                     <div class="flex-shrink-0">
-                        <i class="fas fa-comments fa-2x text-secondary me-3"></i>
+                        <i class="fas fa-gem fa-2x text-secondary me-3"></i>
                     </div>
                     <div>
-                        <h5>Direct Communication</h5>
-                        <p>Message directly with the owner for personalized service and real-time updates on your projects.</p>
+                        <h5>Certified Quality</h5>
+                        <p>All our diamonds and gemstones are certified, and we provide comprehensive documentation for every piece.</p>
                     </div>
                 </div>
                 <div class="d-flex mb-4">
                     <div class="flex-shrink-0">
-                        <i class="fas fa-map-marker-alt fa-2x text-secondary me-3"></i>
+                        <i class="fas fa-shipping-fast fa-2x text-secondary me-3"></i>
                     </div>
                     <div>
-                        <h5>Los Angeles Based</h5>
-                        <p>Proudly serving the Los Angeles community with local expertise and convenient consultations.</p>
+                        <h5>Fast Turnaround</h5>
+                        <p>Efficient custom design process with clear timelines and regular updates on your project's progress.</p>
                     </div>
                 </div>
                 <div class="d-flex mb-4">
                     <div class="flex-shrink-0">
-                        <i class="fas fa-certificate fa-2x text-secondary me-3"></i>
+                        <i class="fas fa-handshake fa-2x text-secondary me-3"></i>
                     </div>
                     <div>
-                        <h5>Certified Appraisals</h5>
-                        <p>Official DIA certified appraisals for insurance, resale, and estate documentation.</p>
+                        <h5>Lifetime Support</h5>
+                        <p>We stand behind our work with ongoing maintenance, repairs, and appraisal services for life.</p>
                     </div>
                 </div>
             </div>
@@ -232,21 +178,46 @@
 <!-- Call to Action -->
 <section class="py-5 bg-light">
     <div class="container text-center">
-        <h2 class="mb-4">Ready to Find Your Perfect Piece?</h2>
+        <h2 class="mb-4">Ready to Create Your Perfect Piece?</h2>
         <p class="lead mb-4">
-            Whether you're looking for the perfect engagement ring, want to create something unique, 
-            or need professional appraisal services, we're here to help.
+            Whether you're looking for the perfect engagement ring, custom jewelry, or professional appraisal services, 
+            we're here to help bring your vision to life.
         </p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
             <a href="{{ url_for('gallery.index') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-search me-2"></i>Browse Jewelry
+                <i class="fas fa-search me-2"></i>Browse Our Gallery
             </a>
             <a href="{{ url_for('main.custom_request') }}" class="btn btn-outline-primary btn-lg">
-                <i class="fas fa-lightbulb me-2"></i>Custom Design
+                <i class="fas fa-pencil-ruler me-2"></i>Start Custom Design
             </a>
-            <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary btn-lg">
-                <i class="fas fa-comments me-2"></i>Get in Touch
+            <a href="{{ url_for('main.contact') }}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-comments me-2"></i>Get In Touch
             </a>
+        </div>
+    </div>
+</section>
+
+<!-- Social Proof -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h3 class="mb-4">Follow Our Work</h3>
+                <p class="lead">
+                    See our latest creations and satisfied customers on social media. 
+                    Check out our reviews on WeddingWire to see what our clients are saying.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="https://www.instagram.com/wantmydiamond/" target="_blank" 
+                       class="btn btn-outline-primary">
+                        <i class="fab fa-instagram me-2"></i>Instagram
+                    </a>
+                    <a href="https://www.weddingwire.com/reviews/want-my-diamond-los-angeles/d88c9398bec89378.html" 
+                       target="_blank" class="btn btn-outline-primary">
+                        <i class="fas fa-heart me-2"></i>WeddingWire Reviews
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </section>

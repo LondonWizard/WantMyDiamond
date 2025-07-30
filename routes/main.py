@@ -10,8 +10,7 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     """Landing page"""
-    featured_listings = Listing.query.filter_by(is_active=True).limit(6).all()
-    return render_template('index.html', featured_listings=featured_listings)
+    return render_template('index.html')
 
 @main_bp.route('/gallery')
 def gallery():
